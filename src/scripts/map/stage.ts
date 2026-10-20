@@ -81,10 +81,11 @@ const CLOUD_POINT = { gl: 3.2, canvas: { narrow: 1.7, wide: 1.9 } };
 // Particle text points are sized from the sampling spacing (a little under it) so dots stay
 // distinct: large desktop text keeps ~2.4px dots, small narrow-screen text gets finer ones.
 const TEXT_POINT = { max: 2.4, min: 1, ofSpacing: 0.8 };
-// Particle text: springs start loose and tighten with an ease-in-out, so the cloud drifts in
-// and the letters sharpen at the end rather than snapping into place.
-const TEXT_STIFFNESS = { start: 0.001, end: 0.015 };
-const TEXT_FORM_MS = 2000; // at 60fps the address is legible by ~1.3s and settled by ~1.5s
+// Whenever the particles take a new shape (the intro burst into the map, the map into the
+// email and back), springs start loose and tighten with an ease-in-out: the cloud drifts in
+// and the shape sharpens at the end. At 60fps it reads by ~1.3s and settles by ~1.5s.
+// Afterwards springs stay at `end`, which also drives camera moves between scenes.
+const FORMATION = { start: 0.001, end: 0.015, ms: 2000 };
 const TEXT_DENSITY = 34; // sample points per character height
 
 const css = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -122,9 +123,8 @@ export class MapStage {
   private textPointSize: number = TEXT_POINT.max;
   private hovered: number | null = null;
   private query = { active: false, x: 0, y: 0, vx: 0, vy: 0, targets: [] as number[], born: 0 };
-  private started = performance.now();
-  /** When the current particle text began forming. */
-  private textStarted = 0;
+  /** When the particles last started forming a new shape; see FORMATION. */
+  private formStarted = performance.now();
   private revealed: boolean;
   private running = false;
 
@@ -182,7 +182,7 @@ export class MapStage {
     this.litAnchors = new Set(scene.lit.map((id) => this.anchorOf.get(id)).filter((a) => a !== undefined));
     if (textChanged) {
       this.textTargets = scene.text ? this.sampleText(scene.text) : null;
-      this.textStarted = performance.now();
+      this.formStarted = performance.now();
     }
     this.setHovered(null);
     this.computeHomes();
@@ -231,7 +231,7 @@ export class MapStage {
   burstFrom(points: { x: number; y: number }[]): void {
     if (points.length && !this.media.reduce.matches) {
       this.particles.burst(points, this.random);
-      this.started = performance.now();
+      this.formStarted = performance.now();
     }
     this.reveal(false);
   }
@@ -300,7 +300,7 @@ export class MapStage {
     this.revealed = true;
     if (fromNoise) {
       this.particles.scatter(this.width, this.height, this.random);
-      this.started = performance.now();
+      this.formStarted = performance.now();
     }
     if (this.media.reduce.matches) this.renderStill();
     else this.play();
@@ -313,18 +313,16 @@ export class MapStage {
   }
 
   private step(now: number): void {
-    // Springs stiffen over ~1.8s after a burst or scatter, so noise settles into clusters.
-    const t = Math.min(1, (now - this.started) / 1800);
-    const stiffness = this.textTargets ? this.textStiffness(now) : 0.0025 + 0.0115 * (1 - (1 - t) ** 3);
-    this.particles.step(stiffness, this.textTargets ? 0.04 : 0.12, this.pointer, this.media.narrow.matches);
+    this.particles.step(this.stiffness(now), this.textTargets ? 0.04 : 0.12, this.pointer, this.media.narrow.matches);
     for (let s = 0; s < this.alpha.length; s++) this.alpha[s] += (this.targetAlpha(s) - this.alpha[s]) * 0.1;
     this.stepQuery();
   }
 
-  private textStiffness(now: number): number {
-    const t = Math.min(1, (now - this.textStarted) / TEXT_FORM_MS);
+  /** Spring stiffness for this frame, following the FORMATION curve since the last new shape. */
+  private stiffness(now: number): number {
+    const t = Math.min(1, (now - this.formStarted) / FORMATION.ms);
     const eased = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2; // ease-in-out cubic
-    return TEXT_STIFFNESS.start + (TEXT_STIFFNESS.end - TEXT_STIFFNESS.start) * eased;
+    return FORMATION.start + (FORMATION.end - FORMATION.start) * eased;
   }
 
   private stepQuery(): void {
