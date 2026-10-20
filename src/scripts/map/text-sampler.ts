@@ -15,14 +15,20 @@ interface Options {
   maxHeight?: number;
   /** Roughly how many points across one character's height; higher is denser. */
   density?: number;
+  /** Most points to return (e.g. the particles available); sampling coarsens to fit. */
+  maxPoints?: number;
 }
 
-/**
- * Lay `lines` out centred in `rect`, as large as fits, and return the opaque
- * pixels as flat [x0, y0, x1, y1, …] coordinates in the rect's space.
- */
-export function sampleText(lines: string[], rect: Rect, options: Options): Float32Array {
-  const { family, maxWidth = 0.86, maxHeight = 0.6, density = 26 } = options;
+export interface TextSample {
+  /** Flat [x0, y0, x1, y1, …] coordinates of the text's opaque pixels, in page space. */
+  points: Float32Array;
+  /** Distance between neighbouring sample points, in px; small text samples more finely. */
+  spacing: number;
+}
+
+/** Lay `lines` out centred in `rect`, as large as fits, and sample its opaque pixels. */
+export function sampleText(lines: string[], rect: Rect, options: Options): TextSample {
+  const { family, maxWidth = 0.86, maxHeight = 0.6, density = 26, maxPoints = Infinity } = options;
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(1, Math.round(rect.width));
   canvas.height = Math.max(1, Math.round(rect.height));
@@ -46,12 +52,25 @@ export function sampleText(lines: string[], rect: Rect, options: Options): Float
   });
 
   const { data } = g.getImageData(0, 0, canvas.width, canvas.height);
-  const step = Math.max(2, Math.round(size / density));
-  const points: number[] = [];
-  for (let y = 0; y < canvas.height; y += step) {
-    for (let x = 0; x < canvas.width; x += step) {
-      if (data[(y * canvas.width + x) * 4 + 3] > 128) points.push(rect.left + x, rect.top + y);
+  const sample = (step: number) => {
+    const points: number[] = [];
+    for (let y = 0; y < canvas.height; y += step) {
+      for (let x = 0; x < canvas.width; x += step) {
+        // Floor, not round: rounding the last column up would read the next row's first pixel.
+        const i = (Math.floor(y) * canvas.width + Math.floor(x)) * 4 + 3;
+        if (data[i] > 128) points.push(rect.left + x, rect.top + y);
+      }
     }
+    return points;
+  };
+
+  // Points scale with 1/step², so if there are too many, widen the step by the square root
+  // of the excess and sample again; a couple of passes always lands under the limit.
+  let step = Math.max(1, size / density);
+  let points = sample(step);
+  while (points.length / 2 > maxPoints) {
+    step *= Math.sqrt(points.length / 2 / maxPoints) * 1.02;
+    points = sample(step);
   }
-  return Float32Array.from(points);
+  return { points: Float32Array.from(points), spacing: step };
 }

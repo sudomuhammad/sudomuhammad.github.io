@@ -9,7 +9,8 @@ export interface SceneContext {
   stage: MapStage;
   /** Sideways camera shift that keeps the subject clear of the step's card. */
   cardShift: number;
-  phone: boolean;
+  /** Phone held upright: the map sits above the card, so long text is split to fit. */
+  stacked: boolean;
 }
 
 type Builders = { [K in Step['kind']]: (step: Extract<Step, { kind: K }>, ctx: SceneContext) => Scene };
@@ -41,10 +42,10 @@ const builders: Builders = {
     labels: { kind: 'terms', terms },
   }),
 
-  // Phones split the address so it can be set large enough to read.
+  // Stacked, the address is split after the @ so it can be set large enough to read.
   contact: (_, ctx) => ({
     ...OVERVIEW,
-    text: ctx.phone ? person.email.replace('@', '@\n').split('\n') : [person.email],
+    text: ctx.stacked ? person.email.replace('@', '@\n').split('\n') : [person.email],
   }),
 };
 

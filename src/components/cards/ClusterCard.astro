@@ -39,8 +39,9 @@ const { cluster, evidence, skills } = Astro.props;
     color: var(--ink-3);
   }
 
-  /* Phones: titles only, so the map stays visible above the card. Full text is a tap away on the map. */
-  @media (max-width: 959px) {
+  /* Stacked (same query as src/scripts/layout.ts): titles only, so the map stays visible
+     above the card. Full text is a tap away on the map. */
+  @media (max-width: 959px) and (min-height: 501px) {
     .text,
     .skills {
       display: none;

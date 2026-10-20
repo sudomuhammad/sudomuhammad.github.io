@@ -26,6 +26,9 @@ const { headingId, title, lede } = Astro.props;
   }
 
   .email a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
     color: var(--ink);
     text-decoration-color: var(--agents);
     text-decoration-thickness: 2px;
@@ -34,7 +37,7 @@ const { headingId, title, lede } = Astro.props;
   .button {
     display: inline-flex;
     align-items: center;
-    min-height: 44px;
+    min-height: var(--tap);
     padding: 0 1.05rem;
     border: 1px solid var(--ink);
     border-radius: 999px;

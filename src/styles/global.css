@@ -1,4 +1,9 @@
 :root {
+  /* Shared layout values: the ask button's distance from the bottom, and the minimum
+     size of anything tappable. */
+  --ask-bottom: clamp(1rem, 3vh, 1.75rem);
+  --tap: 44px;
+
   --ground: #15171b;
   --ground-raised: #1d2026;
   --ink: #eceef1;

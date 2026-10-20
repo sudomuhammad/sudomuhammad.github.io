@@ -17,7 +17,7 @@ export interface Pointer {
 }
 
 const DAMPING = 0.86;
-const POINTER_RADIUS = { phone: 60, desktop: 96 };
+const POINTER_RADIUS = { narrow: 60, wide: 96 }; // px
 const POINTER_FORCE = { anchor: 0.6, cloud: 2.4 }; // anchors resist so they stay hoverable
 
 /**
@@ -85,8 +85,8 @@ export class ParticleSystem {
    * Advance one frame. `stiffness` ramps up during the intro so noise settles into clusters.
    * `jitter` keeps the cloud alive; anchors don't get it, because labels are drawn on them.
    */
-  step(stiffness: number, jitter: number, pointer: Pointer, phone: boolean): void {
-    const radius = phone ? POINTER_RADIUS.phone : POINTER_RADIUS.desktop;
+  step(stiffness: number, jitter: number, pointer: Pointer, narrow: boolean): void {
+    const radius = narrow ? POINTER_RADIUS.narrow : POINTER_RADIUS.wide;
     const r2 = radius * radius;
     for (let p = 0; p < this.count; p++) {
       let ax = (this.homeX[p] - this.x[p]) * stiffness;

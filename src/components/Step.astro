@@ -37,11 +37,28 @@ const { id, align = 'side' } = Astro.props;
     padding-bottom: 8rem;
   }
 
-  /* Phones: cards sit low so the map has the top of the screen. */
-  @media (max-width: 959px) {
+  /* Stacked (phones held upright; same query as src/scripts/layout.ts): cards sit low so
+     the map has the top of the screen, clear of the ask button below them. */
+  @media (max-width: 959px) and (min-height: 501px) {
     .step {
       align-items: flex-end;
-      padding: 5rem 1rem 6rem;
+      padding: 5rem 1rem calc(var(--ask-bottom) + var(--tap) + 1.25rem);
+    }
+  }
+
+  /* Short screens (phones turned sideways): cards stay beside the map and scroll inside
+     themselves rather than running under the top bar or the ask button. */
+  @media (max-height: 500px) {
+    .step,
+    .step.centre {
+      align-items: center;
+      padding-block: 5rem 4.5rem; /* clear of the top bar and the ask button */
+    }
+
+    .step > :global(.card) {
+      max-height: calc(100svh - 9.5rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
     }
   }
 

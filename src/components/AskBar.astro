@@ -35,7 +35,7 @@ const { suggestions } = Astro.props;
   .ask {
     position: fixed;
     left: 50%;
-    bottom: clamp(1rem, 3vh, 1.75rem);
+    bottom: var(--ask-bottom);
     z-index: 3;
     width: min(42rem, calc(100vw - 2rem));
     transform: translateX(-50%);
@@ -47,7 +47,7 @@ const { suggestions } = Astro.props;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    min-height: 44px;
+    min-height: var(--tap);
     padding: 0 1.2rem;
     border: 1px solid var(--rule);
     border-radius: 999px;
@@ -163,7 +163,7 @@ const { suggestions } = Astro.props;
   input {
     flex: 1;
     min-width: 0;
-    min-height: 44px;
+    min-height: var(--tap);
     border: 0;
     background: transparent;
     color: var(--ink);
@@ -183,8 +183,8 @@ const { suggestions } = Astro.props;
   .send {
     display: grid;
     place-items: center;
-    width: 44px;
-    height: 44px;
+    width: var(--tap);
+    height: var(--tap);
     border: 0;
     border-radius: 10px;
     background: var(--ink);
@@ -211,7 +211,7 @@ const { suggestions } = Astro.props;
 
   @media (max-width: 959px) {
     .suggestion {
-      min-height: 44px;
+      min-height: var(--tap);
     }
   }
 </style>

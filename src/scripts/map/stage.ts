@@ -76,8 +76,11 @@ const DIMMED = 0.14;
 const HOVER_RADIUS = 18; // px
 const INTRO_FALLBACK_MS = 3000;
 const QUERY_WEIGHTS = [0.55, 0.28, 0.17];
-const CLOUD_POINT_SIZE = 3.2; // css px
-const TEXT_POINT_SIZE = 2.4;
+// Cloud points in css px: WebGL draws soft discs; the Canvas fallback draws small squares.
+const CLOUD_POINT = { gl: 3.2, canvas: { narrow: 1.7, wide: 1.9 } };
+// Particle text points are sized from the sampling spacing (a little under it) so dots stay
+// distinct: large desktop text keeps ~2.4px dots, small narrow-screen text gets finer ones.
+const TEXT_POINT = { max: 2.4, min: 1, ofSpacing: 0.8 };
 // Particle text: springs start loose and tighten with an ease-in-out, so the cloud drifts in
 // and the letters sharpen at the end rather than snapping into place.
 const TEXT_STIFFNESS = { start: 0.001, end: 0.015 };
@@ -98,7 +101,7 @@ export class MapStage {
   private readonly theme = { ink: css('--ink'), ground: css('--ground'), grid: css('--grid') };
   private readonly media = {
     reduce: matchMedia('(prefers-reduced-motion: reduce)'),
-    phone: matchMedia('(max-width: 959px)'),
+    narrow: matchMedia('(max-width: 959px)'),
     wide: matchMedia('(min-width: 1600px)'),
   };
 
@@ -116,6 +119,7 @@ export class MapStage {
   private focusSlots: Set<number> | null = null;
   private litAnchors = new Set<number>();
   private textTargets: Float32Array | null = null;
+  private textPointSize: number = TEXT_POINT.max;
   private hovered: number | null = null;
   private query = { active: false, x: 0, y: 0, vx: 0, vy: 0, targets: [] as number[], born: 0 };
   private started = performance.now();
@@ -139,8 +143,8 @@ export class MapStage {
     this.glCanvas.setAttribute('aria-hidden', 'true');
     this.gl = createGlCloud(this.glCanvas, this.colors, 16000);
     if (this.gl) canvas.before(this.glCanvas);
-    const phone = this.media.phone.matches;
-    const budget = this.gl ? (phone ? 5000 : 12000) : phone ? 1400 : 3000;
+    const narrow = this.media.narrow.matches;
+    const budget = this.gl ? (narrow ? 5000 : 12000) : narrow ? 1400 : 3000;
 
     this.particles = new ParticleSystem(
       [
@@ -266,7 +270,9 @@ export class MapStage {
   private sampleText(lines: string[]): Float32Array {
     const vp = this.viewport();
     const rect = { left: vp.left, top: vp.top, width: vp.width, height: vp.height };
-    const points = sampleText(lines, rect, { family: SANS, density: TEXT_DENSITY });
+    const cloud = this.particles.count - this.particles.anchorCount;
+    const { points, spacing } = sampleText(lines, rect, { family: SANS, density: TEXT_DENSITY, maxPoints: cloud });
+    this.textPointSize = Math.min(TEXT_POINT.max, Math.max(TEXT_POINT.min, spacing * TEXT_POINT.ofSpacing));
     // Shuffle so neighbouring particles don't all race to neighbouring targets.
     return shufflePairs(points, this.random);
   }
@@ -310,7 +316,7 @@ export class MapStage {
     // Springs stiffen over ~1.8s after a burst or scatter, so noise settles into clusters.
     const t = Math.min(1, (now - this.started) / 1800);
     const stiffness = this.textTargets ? this.textStiffness(now) : 0.0025 + 0.0115 * (1 - (1 - t) ** 3);
-    this.particles.step(stiffness, this.textTargets ? 0.04 : 0.12, this.pointer, this.media.phone.matches);
+    this.particles.step(stiffness, this.textTargets ? 0.04 : 0.12, this.pointer, this.media.narrow.matches);
     for (let s = 0; s < this.alpha.length; s++) this.alpha[s] += (this.targetAlpha(s) - this.alpha[s]) * 0.1;
     this.stepQuery();
   }
@@ -378,15 +384,19 @@ export class MapStage {
   private drawCloud(): void {
     const { particles: p, ctx, alpha } = this;
     const noise = this.colors.length - 1;
+    // Text gets full strength: its dots are finer than the cloud's, so they carry less ink.
+    const strength = this.textTargets ? 1 : 0.78;
+    const opacity = (s: number) => alpha[s] * (s === noise ? 0.6 : strength);
     if (this.gl) {
-      for (let s = 0; s < alpha.length; s++) this.glAlpha[s] = alpha[s] * (s === noise ? 0.6 : 0.78);
-      // Particle text uses smaller points so letters stay crisp where many particles share a target.
-      const size = this.textTargets ? TEXT_POINT_SIZE : CLOUD_POINT_SIZE;
+      for (let s = 0; s < alpha.length; s++) this.glAlpha[s] = opacity(s);
+      const size = this.textTargets ? this.textPointSize : CLOUD_POINT.gl;
       return this.gl.draw(p.x, p.y, p.slot, p.anchorCount, p.count, this.glAlpha, size);
     }
-    const size = this.media.phone.matches ? 1.7 : 1.9;
+    const size = this.textTargets
+      ? this.textPointSize
+      : CLOUD_POINT.canvas[this.media.narrow.matches ? 'narrow' : 'wide'];
     for (let s = 0; s < alpha.length; s++) {
-      ctx.globalAlpha = alpha[s] * (s === noise ? 0.7 : 0.8);
+      ctx.globalAlpha = opacity(s);
       ctx.fillStyle = this.colors[s];
       ctx.beginPath();
       for (let i = p.anchorCount; i < p.count; i++) {
@@ -466,8 +476,8 @@ export class MapStage {
     const { passages, labels } = this.options;
     const { x, y, slot, anchorCount } = this.particles;
     const mode = this.scene.labels;
-    const phone = this.media.phone.matches;
-    const base = phone ? 11 : 12.5;
+    const narrow = this.media.narrow.matches;
+    const base = narrow ? 11 : 12.5;
     const items: LabelItem[] = [];
     for (let a = 0; a < anchorCount; a++) {
       const passage = this.isPassage(a) ? passages[a] : null;
@@ -480,7 +490,7 @@ export class MapStage {
       if (rank === null) {
         if (mode.kind === 'terms') rank = term && mode.terms.includes(term) ? 1 : null;
         else if (mode.kind === 'focus') rank = inFocus && (titled || term) ? (titled ? 1 : 2) : null;
-        else if (mode.kind === 'overview' && !phone) rank = titled ? 2 : term && this.media.wide.matches ? 3 : null;
+        else if (mode.kind === 'overview' && !narrow) rank = titled ? 2 : term && this.media.wide.matches ? 3 : null;
       }
       if (rank === null || (!titled && !term)) continue;
 
@@ -587,7 +597,7 @@ export class MapStage {
     g.scale(this.dpr, this.dpr);
     g.strokeStyle = this.theme.grid;
     g.lineWidth = 1;
-    const cell = this.media.phone.matches ? 64 : 96;
+    const cell = this.media.narrow.matches ? 64 : 96;
     g.beginPath();
     for (let gx = (this.width % cell) / 2; gx <= this.width; gx += cell) {
       g.moveTo(Math.round(gx) + 0.5, 0);
