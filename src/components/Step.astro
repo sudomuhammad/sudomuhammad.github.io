@@ -1,0 +1,53 @@
+---
+// One scroll step: a screen-tall band holding one card. The story controller marks
+// the step in the middle of the viewport with data-active; the others recede.
+interface Props {
+  id: string;
+  /** Where the card sits: beside the map (default) or centred, e.g. under particle text. */
+  align?: 'side' | 'centre';
+}
+const { id, align = 'side' } = Astro.props;
+---
+
+<div class:list={['step', align]} id={id} data-step={id}>
+  <slot />
+</div>
+
+<style>
+  .step {
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    padding: 5rem var(--gutter);
+    pointer-events: none; /* only cards catch the pointer; the map stays hoverable */
+  }
+
+  .step > :global(*) {
+    opacity: 0.25;
+    transition: opacity 400ms ease-out;
+  }
+
+  .step[data-active] > :global(*) {
+    opacity: 1;
+  }
+
+  .step.centre {
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 8rem;
+  }
+
+  /* Phones: cards sit low so the map has the top of the screen. */
+  @media (max-width: 959px) {
+    .step {
+      align-items: flex-end;
+      padding: 5rem 1rem 6rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .step > :global(*) {
+      transition: none;
+    }
+  }
+</style>

@@ -9,16 +9,23 @@
     "dev": "astro dev",
     "build": "astro check && astro build",
     "check": "astro check",
+    "map": "uv run --directory ml python build_map.py",
+    "map:check": "uv run --directory ml python build_map.py --check",
+    "test:ml": "uv run --directory ml pytest -q && uv run --directory ml ruff check . && uv run --directory ml ruff format --check .",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "map:fixtures": "uv run --directory ml python query_fixtures.py",
+    "test": "vitest run"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "@huggingface/transformers": "4.3.0",
     "astro": "^7.4.1"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.11",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "5.0.5"
   }
 }

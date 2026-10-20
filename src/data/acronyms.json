@@ -1,0 +1,14 @@
+{
+  "_comment": "Expanded in search queries before embedding (MiniLM doesn't link 'RAG' to 'retrieval-augmented generation'). Shared by src/scripts/retrieval.ts and ml/query_fixtures.py.",
+  "terms": {
+    "rag": "retrieval-augmented generation RAG",
+    "llm": "large language model LLM",
+    "llms": "large language models LLMs",
+    "nlp": "natural language processing NLP",
+    "ml": "machine learning ML",
+    "ai": "artificial intelligence AI",
+    "ner": "named-entity recognition NER",
+    "ci/cd": "continuous integration deployment pipelines CI/CD",
+    "mcp": "Model Context Protocol MCP"
+  }
+}

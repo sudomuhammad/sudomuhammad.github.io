@@ -1,0 +1,55 @@
+---
+// The fixed, full-screen map behind the story. src/scripts/map/stage.ts adds a
+// WebGL layer under #map when the browser supports it.
+import { clusters, labels, mappedPassages } from '../data/map';
+
+const description = `A map of my CV: ${mappedPassages.length} passages and ${labels.length} skills, embedded with a sentence model and grouped into ${clusters.length} clusters: ${clusters.map((c) => c.name).join(', ')}. The same information is in the text of this page.`;
+---
+
+<div class="stage">
+  <canvas id="map" role="img" aria-label={description}></canvas>
+  <div class="tip" id="tip" hidden></div>
+</div>
+
+<style>
+  .stage {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .stage :global(canvas) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .stage :global(.map-gl) {
+    pointer-events: none;
+  }
+
+  .tip {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 4;
+    max-width: min(22rem, calc(100vw - 2rem));
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: var(--ground-raised);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+    pointer-events: none;
+  }
+
+  .tip :global(.tip-source) {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--ink-3);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+</style>

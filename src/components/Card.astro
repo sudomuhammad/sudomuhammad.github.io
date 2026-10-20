@@ -1,0 +1,62 @@
+---
+// The surface every story card sits on. Cards are the only part of a story step
+// that takes pointer events, so the map underneath stays interactive.
+interface Props {
+  /** Accent colour (a cluster's), shown as the card's top rule. */
+  accent?: string;
+  wide?: boolean;
+}
+const { accent, wide = false } = Astro.props;
+---
+
+<div class:list={['card', { wide }]} style={accent && `--accent:${accent}`}>
+  <slot />
+</div>
+
+<style>
+  .card {
+    --accent: var(--rule);
+    pointer-events: auto;
+    width: min(100%, 26rem);
+    padding: 1.4rem 1.5rem 1.5rem;
+    border: 1px solid var(--rule);
+    border-top: 2px solid var(--accent);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--ground-raised) 94%, transparent);
+    box-shadow: 0 18px 40px rgb(0 0 0 / 0.35);
+  }
+
+  .card.wide {
+    width: min(100%, 34rem);
+  }
+
+  .card :global(h2) {
+    font-size: var(--step-2);
+    margin-bottom: 0.6rem;
+  }
+
+  .card :global(p) {
+    color: var(--ink-2);
+  }
+
+  .card :global(p + p),
+  .card :global(p + ul),
+  .card :global(ul + p) {
+    margin-top: 0.8rem;
+  }
+
+  .card :global(ul) {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .card :global(.meta) {
+    display: block;
+    color: var(--ink-3);
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+</style>

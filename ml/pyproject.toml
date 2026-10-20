@@ -1,0 +1,38 @@
+[project]
+name = "portfolio-map"
+version = "0.1.0"
+description = "Builds the embedding map of the CV for the portfolio site"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "huggingface-hub",
+    "numpy",
+    "onnxruntime",
+    "scikit-learn",
+    "tokenizers",
+    "umap-learn",
+    # Last releases with Intel-Mac wheels; newer ones only build from source there.
+    "numba<0.62",
+    "llvmlite<0.45",
+]
+
+[dependency-groups]
+dev = ["pytest", "ruff"]
+
+[tool.uv]
+# Resolve versions that have wheels for this Intel Mac and for GitHub's Linux runners.
+required-environments = [
+    "sys_platform == 'darwin' and platform_machine == 'x86_64'",
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+filterwarnings = ["ignore::DeprecationWarning"]

@@ -1,0 +1,54 @@
+---
+import { orgOf, type Cluster, type MappedPassage } from '../../data/map';
+import Card from '../Card.astro';
+
+interface Props {
+  cluster: Cluster;
+  evidence: MappedPassage[];
+  skills: string[];
+}
+const { cluster, evidence, skills } = Astro.props;
+---
+
+<Card accent={cluster.color}>
+  <h2>{cluster.name}</h2>
+  <p>{cluster.summary}</p>
+  <ul class="evidence">
+    {
+      evidence.map((p) => (
+        <li>
+          <span class="meta">
+            {p.title} · {orgOf(p.source)}
+          </span>
+          <span class="text">{p.text}</span>
+        </li>
+      ))
+    }
+  </ul>
+  {skills.length > 0 && <p class="skills">{skills.join(', ')}</p>}
+</Card>
+
+<style>
+  .evidence li {
+    color: var(--ink);
+    line-height: 1.45;
+  }
+
+  .skills {
+    font-size: var(--step--1);
+    color: var(--ink-3);
+  }
+
+  /* Phones: titles only, so the map stays visible above the card. Full text is a tap away on the map. */
+  @media (max-width: 959px) {
+    .text,
+    .skills {
+      display: none;
+    }
+
+    .evidence .meta {
+      color: var(--ink);
+      font-size: var(--step--1);
+    }
+  }
+</style>

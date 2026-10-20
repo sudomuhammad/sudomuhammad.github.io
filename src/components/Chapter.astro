@@ -1,0 +1,42 @@
+---
+// A chapter of the story: its steps, each rendered by the card for its kind.
+import type { Chapter } from '../data/story';
+import Card from './Card.astro';
+import Step from './Step.astro';
+import ClusterCard from './cards/ClusterCard.astro';
+import ContactCard from './cards/ContactCard.astro';
+import SkillsCard from './cards/SkillsCard.astro';
+
+interface Props {
+  chapter: Chapter;
+}
+const { chapter } = Astro.props;
+---
+
+<section class="chapter" aria-labelledby={`${chapter.id}-title`}>
+  {
+    chapter.steps.map((step) => (
+      <Step id={step.id} align={step.kind === 'contact' ? 'centre' : 'side'}>
+        {step.kind === 'chapter' && (
+          <Card>
+            <h2 id={`${chapter.id}-title`} class="chapter-title">
+              {chapter.title}
+            </h2>
+            <p>{chapter.lede}</p>
+          </Card>
+        )}
+        {step.kind === 'cluster' && <ClusterCard {...step} />}
+        {step.kind === 'skills' && <SkillsCard group={step.group} items={step.items} />}
+        {step.kind === 'contact' && <ContactCard headingId={`${chapter.id}-title`} title={chapter.title} lede={chapter.lede} />}
+      </Step>
+    ))
+  }
+</section>
+
+<style>
+  .chapter-title {
+    font-size: var(--step-3);
+    letter-spacing: -0.035em;
+    font-variation-settings: 'wdth' 85;
+  }
+</style>

@@ -23,6 +23,10 @@ const { title, description } = Astro.props;
     <meta property="og:type" content="website" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
+    <script is:inline>
+      // Decide before first paint whether the token intro runs, so the headline doesn't flash.
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('intro');
+    </script>
   </head>
   <body>
     <slot />

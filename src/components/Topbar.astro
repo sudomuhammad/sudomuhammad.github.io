@@ -1,0 +1,126 @@
+---
+import { person } from '../data/cv';
+import { chapters } from '../data/story';
+
+// Desktop shows the links inline; phones fold the same links into a native <details> menu.
+const links = chapters.map((c) => ({ href: `#${c.id}`, label: c.nav }));
+---
+
+<header class="topbar">
+  <a class="brand" href="#top">{person.name}</a>
+  <nav aria-label="Chapters">
+    <ul class="inline">
+      {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+      <li><button type="button" data-open-ask>Ask</button></li>
+    </ul>
+    <details class="menu">
+      <summary>Menu</summary>
+      <ul>
+        {links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+      </ul>
+    </details>
+  </nav>
+</header>
+
+<script>
+  // Close the phone menu once a chapter is picked.
+  document.querySelectorAll<HTMLAnchorElement>('.menu a').forEach((a) =>
+    a.addEventListener('click', () => a.closest('details')?.removeAttribute('open')),
+  );
+</script>
+
+<style>
+  .topbar {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem var(--gutter);
+    background: linear-gradient(var(--ground) 40%, transparent);
+  }
+
+  .brand {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: opacity 300ms ease-out;
+  }
+
+  /* Hidden during the intro, where the name is the whole screen. */
+  :global(html[data-step-kind='intro']) .brand {
+    opacity: 0;
+  }
+
+  ul {
+    display: flex;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  a:not(.brand),
+  button,
+  summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 0.7rem;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--ink-2);
+    font: inherit;
+    font-size: var(--step--1);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 160ms ease-out;
+  }
+
+  a:not(.brand):hover,
+  button:hover,
+  summary:hover {
+    color: var(--ink);
+  }
+
+  .menu {
+    display: none;
+    position: relative;
+  }
+
+  summary {
+    list-style: none;
+    border: 1px solid var(--rule);
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .menu ul {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.4rem);
+    flex-direction: column;
+    min-width: 10rem;
+    padding: 0.4rem;
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    background: var(--ground-raised);
+    box-shadow: 0 12px 30px rgb(0 0 0 / 0.4);
+  }
+
+  @media (max-width: 719px) {
+    .inline {
+      display: none;
+    }
+
+    .menu {
+      display: block;
+    }
+  }
+</style>

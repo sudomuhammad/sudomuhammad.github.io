@@ -1,0 +1,1300 @@
+{
+ "generated": "by ml/build_map.py; do not edit by hand",
+ "sourceHash": "5bd7da88b3ee635a",
+ "model": {
+  "repo": "Xenova/all-MiniLM-L6-v2",
+  "revision": "751bff37182d3f1213fa05d7196b954e230abad9",
+  "file": "onnx/model_quantized.onnx",
+  "dims": 384
+ },
+ "clusters": [
+  {
+   "id": 0,
+   "size": 4,
+   "terms": [
+    "search",
+    "learning",
+    "transfer",
+    "transfer learning",
+    "sentiment",
+    "sentiment analysis"
+   ],
+   "key": "nlp",
+   "name": "NLP and semantic search",
+   "summary": "Embeddings, retrieval and classic NLP: classification, entities, topics and sentiment.",
+   "color": "#7392FF",
+   "approved": true
+  },
+  {
+   "id": 1,
+   "size": 9,
+   "terms": [
+    "python",
+    "hugging",
+    "hugging face",
+    "face",
+    "tensorflow",
+    "learning"
+   ],
+   "key": "data",
+   "name": "Data science and ML",
+   "summary": "Modelling and analysis with the Python ML stack, from scrapers to deep learning.",
+   "color": "#38C290",
+   "approved": true
+  },
+  {
+   "id": 2,
+   "size": 11,
+   "terms": [
+    "tool",
+    "model",
+    "ai",
+    "agent",
+    "llm",
+    "azure"
+   ],
+   "key": "agents",
+   "name": "AI agents and LLM frameworks",
+   "summary": "Language-model agents inside real products: tool calling, orchestration, evaluation and the frameworks behind them.",
+   "color": "#FF6A4D",
+   "approved": true
+  },
+  {
+   "id": 3,
+   "size": 8,
+   "terms": [
+    "model",
+    "turn",
+    "writes",
+    "prompt",
+    "sees",
+    "profile"
+   ],
+   "key": "context",
+   "name": "Context and prompt engineering",
+   "summary": "Deciding what the model sees each turn: prompt assembly, caching, extraction and guarded data writes.",
+   "color": "#B98CFF",
+   "approved": true
+  },
+  {
+   "id": 4,
+   "size": 4,
+   "terms": [
+    "aws",
+    "docker",
+    "fargate",
+    "deployed aws",
+    "deployed",
+    "circleci"
+   ],
+   "key": "shipping",
+   "name": "Shipping to production",
+   "summary": "APIs, containers and pipelines that get models into people’s hands.",
+   "color": "#E9B032",
+   "approved": true
+  },
+  {
+   "id": 5,
+   "size": 7,
+   "terms": [
+    "oracle",
+    "linux",
+    "systems",
+    "rdbms",
+    "oracle rdbms",
+    "mssql postgresql"
+   ],
+   "key": "systems",
+   "name": "Databases and systems",
+   "summary": "The data underneath: Oracle, PostgreSQL and Linux, run, tuned and migrated.",
+   "color": "#4CC2D9",
+   "approved": true
+  }
+ ],
+ "passages": [
+  {
+   "kind": "context",
+   "title": "Money Means",
+   "text": "Aida is an AI financial adviser. I’m responsible for the parts of it that understand what a user says, remember it, and use it in later conversations.",
+   "source": "AI Engineer, Money Means",
+   "id": 0,
+   "x": 0.5204,
+   "y": 0.7955,
+   "cluster": 2,
+   "outlier": false,
+   "tokens": 34
+  },
+  {
+   "kind": "point",
+   "title": "Aida’s chat agent",
+   "text": "Own the language-model agent behind Aida’s chat: tool selection, conversation flow, and how facts a user shares are captured and reused.",
+   "source": "AI Engineer, Money Means",
+   "id": 1,
+   "x": 0.4118,
+   "y": 0.7642,
+   "cluster": 2,
+   "outlier": false,
+   "tokens": 30
+  },
+  {
+   "kind": "point",
+   "title": "Single-call extraction",
+   "text": "Replaced a multi-call extraction loop with a single-call design that is markedly faster, with no loss in accuracy.",
+   "source": "AI Engineer, Money Means",
+   "id": 2,
+   "x": 0.1493,
+   "y": 1.0,
+   "cluster": 3,
+   "outlier": false,
+   "tokens": 24
+  },
+  {
+   "kind": "point",
+   "title": "Tool selection step",
+   "text": "Designed the step that decides which tools the model sees for each message, so it picks the right one far more often.",
+   "source": "AI Engineer, Money Means",
+   "id": 3,
+   "x": 0.0695,
+   "y": 0.888,
+   "cluster": 3,
+   "outlier": false,
+   "tokens": 24
+  },
+  {
+   "kind": "point",
+   "title": "Prompt caching",
+   "text": "Introduced prompt caching across all model calls by separating the fixed and per-turn parts of each prompt.",
+   "source": "AI Engineer, Money Means",
+   "id": 4,
+   "x": 0.0297,
+   "y": 0.9594,
+   "cluster": 3,
+   "outlier": false,
+   "tokens": 21
+  },
+  {
+   "kind": "point",
+   "title": "Agent tool contracts",
+   "text": "Set the patterns the team builds agent tools against: a typed contract per tool, structured JSON output per model call, and one place that defines what each tool needs before it can run.",
+   "source": "AI Engineer, Money Means",
+   "id": 5,
+   "x": 0.2293,
+   "y": 0.6907,
+   "cluster": 2,
+   "outlier": false,
+   "tokens": 38
+  },
+  {
+   "kind": "point",
+   "title": "Guarded financial data writes",
+   "text": "Designed how the agent reads and writes financial data: typed profile writes behind a confidence threshold, tools gated on what the user’s accounts contain, and no unvalidated writes from the model.",
+   "source": "AI Engineer, Money Means",
+   "id": 6,
+   "x": 0.32,
+   "y": 0.8646,
+   "cluster": 3,
+   "outlier": false,
+   "tokens": 41
+  },
+  {
+   "kind": "point",
+   "title": "Per-turn context",
+   "text": "Own what the model sees each turn (history, rolling summary, user profile) so accuracy holds as conversations grow.",
+   "source": "AI Engineer, Money Means",
+   "id": 7,
+   "x": 0.1855,
+   "y": 0.8664,
+   "cluster": 3,
+   "outlier": false,
+   "tokens": 23
+  },
+  {
+   "kind": "point",
+   "title": "Model routing and failover",
+   "text": "Routed models per task, a small model for classification and tool selection and a larger one for the reply, with automatic failover; migrated services between model generations without regressions.",
+   "source": "AI Engineer, Money Means",
+   "id": 8,
+   "x": 0.1813,
+   "y": 0.6082,
+   "cluster": 2,
+   "outlier": false,
+   "tokens": 35
+  },
+  {
+   "kind": "point",
+   "title": "Agent regression tests",
+   "text": "Built automated regression testing for the agent: fixed conversation datasets with expected tool calls and outputs, run on every prompt, tool and model change.",
+   "source": "AI Engineer, Money Means",
+   "id": 9,
+   "x": 0.325,
+   "y": 0.7356,
+   "cluster": 2,
+   "outlier": false,
+   "tokens": 30
+  },
+  {
+   "kind": "point",
+   "title": "Prompt-assembly visualiser",
+   "text": "Built a prompt-assembly visualiser that shows exactly what the model saw on any turn.",
+   "source": "AI Engineer, Money Means",
+   "id": 10,
+   "x": 0.0,
+   "y": 0.7889,
+   "cluster": 3,
+   "outlier": false,
+   "tokens": 18
+  },
+  {
+   "kind": "tools",
+   "title": "Money Means toolkit",
+   "text": "Tools used as AI Engineer at Money Means: C#, Python, Pydantic, CrewAI, Microsoft Agent Framework, Azure AI Search, Azure AI Foundry, Redis, OpenTelemetry.",
+   "source": "AI Engineer, Money Means",
+   "id": 11,
+   "x": 0.5748,
+   "y": 0.5862,
+   "cluster": 2,
+   "outlier": false,
+   "tokens": 42
+  },
+  {
+   "kind": "context",
+   "title": "VUE group",
+   "text": "Data science and backend work for a vehicle fleet business: research, proof-of-concept builds and analytics for internal teams.",
+   "source": "Full Stack Data Scientist, VUE group",
+   "id": 12,
+   "x": 0.3394,
+   "y": 0.3031,
+   "cluster": 5,
+   "outlier": true,
+   "tokens": 26
+  },
+  {
+   "kind": "point",
+   "title": "Conversational analytics",
+   "text": "Developed and deployed conversational data-visualisation services using LLMs and Dash, so non-technical users could query real-time analytics in plain language.",
+   "source": "Full Stack Data Scientist, VUE group",
+   "id": 13,
+   "x": 0.3233,
+   "y": 0.4367,
+   "cluster": 2,
+   "outlier": true,
+   "tokens": 31
+  },
+  {
+   "kind": "point",
+   "title": "AI research briefs",
+   "text": "Evaluated new AI tools and wrote research briefs that senior leadership used to decide what to invest in.",
+   "source": "Full Stack Data Scientist, VUE group",
+   "id": 14,
+   "x": 0.5096,
+   "y": 0.6572,
+   "cluster": 2,
+   "outlier": false,
+   "tokens": 19
+  },
+  {
+   "kind": "point",
+   "title": "Fleet utilisation system",
+   "text": "Built a vehicle utilisation and monitoring system that cut manual reporting by 70%.",
+   "source": "Full Stack Data Scientist, VUE group",
+   "id": 15,
+   "x": 0.0137,
+   "y": 0.6781,
+   "cluster": 3,
+   "outlier": false,
+   "tokens": 17
+  },
+  {
+   "kind": "point",
+   "title": "Statistical modelling",
+   "text": "Ran statistical modelling and exploratory analysis across MSSQL, PostgreSQL and MongoDB.",
+   "source": "Full Stack Data Scientist, VUE group",
+   "id": 16,
+   "x": 0.5352,
+   "y": 0.1221,
+   "cluster": 5,
+   "outlier": false,
+   "tokens": 25
+  },
+  {
+   "kind": "point",
+   "title": "MSSQL to PostgreSQL migration",
+   "text": "Migrated databases from MSSQL to PostgreSQL with no data loss, improving query performance.",
+   "source": "Full Stack Data Scientist, VUE group",
+   "id": 17,
+   "x": 0.4882,
+   "y": 0.0408,
+   "cluster": 5,
+   "outlier": false,
+   "tokens": 22
+  },
+  {
+   "kind": "point",
+   "title": "CI/CD pipelines",
+   "text": "Managed deployment pipelines with CircleCI and Docker, reducing release times.",
+   "source": "Full Stack Data Scientist, VUE group",
+   "id": 18,
+   "x": 0.451,
+   "y": 0.2359,
+   "cluster": 4,
+   "outlier": false,
+   "tokens": 15
+  },
+  {
+   "kind": "tools",
+   "title": "VUE group toolkit",
+   "text": "Tools used as Full Stack Data Scientist at VUE group: Python, AWS, LLMs, NLP, TensorFlow, Docker, n8n, Hugging Face, LangChain, CircleCI, PostgreSQL, MongoDB.",
+   "source": "Full Stack Data Scientist, VUE group",
+   "id": 19,
+   "x": 0.8194,
+   "y": 0.2653,
+   "cluster": 1,
+   "outlier": false,
+   "tokens": 53
+  },
+  {
+   "kind": "context",
+   "title": "Innervoices S.L.",
+   "text": "A start-up building a web product that helped people talk through personal issues from both an emotional and a rational perspective. I owned the backend and deployment in a small team; we paused in late 2023 when funding ran out.",
+   "source": "Co-founder, Innervoices S.L.",
+   "id": 20,
+   "x": 0.4707,
+   "y": 0.3822,
+   "cluster": 2,
+   "outlier": true,
+   "tokens": 47
+  },
+  {
+   "kind": "point",
+   "title": "Flask APIs on Fargate",
+   "text": "Built Flask REST APIs backed by MongoDB and deployed them on AWS Fargate.",
+   "source": "Co-founder, Innervoices S.L.",
+   "id": 21,
+   "x": 0.619,
+   "y": 0.3297,
+   "cluster": 4,
+   "outlier": false,
+   "tokens": 20
+  },
+  {
+   "kind": "point",
+   "title": "Open-source LLM features",
+   "text": "Used open-source language models for the product’s AI features, and curated the datasets behind them.",
+   "source": "Co-founder, Innervoices S.L.",
+   "id": 22,
+   "x": 0.6571,
+   "y": 0.6964,
+   "cluster": 0,
+   "outlier": false,
+   "tokens": 23
+  },
+  {
+   "kind": "point",
+   "title": "RAG with Qdrant and Pinecone",
+   "text": "Built retrieval-augmented generation with Qdrant and Pinecone, reducing hallucinations.",
+   "source": "Co-founder, Innervoices S.L.",
+   "id": 23,
+   "x": 0.8394,
+   "y": 0.7043,
+   "cluster": 3,
+   "outlier": true,
+   "tokens": 19
+  },
+  {
+   "kind": "point",
+   "title": "Containerised deploys",
+   "text": "Containerised the services with Docker and deployed with AWS CDK and Fargate, with SSL for HTTPS.",
+   "source": "Co-founder, Innervoices S.L.",
+   "id": 24,
+   "x": 0.4909,
+   "y": 0.2794,
+   "cluster": 4,
+   "outlier": false,
+   "tokens": 24
+  },
+  {
+   "kind": "tools",
+   "title": "Innervoices S.L. toolkit",
+   "text": "Tools used as Co-founder at Innervoices S.L.: Python, React, MongoDB, Qdrant, Pinecone, AWS, Docker, LangChain, pytest, SageMaker.",
+   "source": "Co-founder, Innervoices S.L.",
+   "id": 25,
+   "x": 0.727,
+   "y": 0.3048,
+   "cluster": 1,
+   "outlier": false,
+   "tokens": 48
+  },
+  {
+   "kind": "context",
+   "title": "Plenty",
+   "text": "Python, machine learning and deep learning to speed up data collection and research at an early-stage start-up.",
+   "source": "Data Scientist, Plenty",
+   "id": 26,
+   "x": 0.915,
+   "y": 0.3964,
+   "cluster": 1,
+   "outlier": false,
+   "tokens": 23
+  },
+  {
+   "kind": "point",
+   "title": "Web scraper, 500k records",
+   "text": "Developed a Python web scraper that collected over half a million descriptions and stock quotes.",
+   "source": "Data Scientist, Plenty",
+   "id": 27,
+   "x": 0.6828,
+   "y": 0.4645,
+   "cluster": 1,
+   "outlier": false,
+   "tokens": 17
+  },
+  {
+   "kind": "point",
+   "title": "ML models, 90%+ accuracy",
+   "text": "Designed and implemented machine-learning models on my own, reaching over 90% accuracy.",
+   "source": "Data Scientist, Plenty",
+   "id": 28,
+   "x": 0.8923,
+   "y": 0.6331,
+   "cluster": 1,
+   "outlier": false,
+   "tokens": 17
+  },
+  {
+   "kind": "point",
+   "title": "CNN image models",
+   "text": "Tested image-processing models using CNN architectures (VGG-16, Inception).",
+   "source": "Data Scientist, Plenty",
+   "id": 29,
+   "x": 0.9825,
+   "y": 0.5541,
+   "cluster": 1,
+   "outlier": false,
+   "tokens": 18
+  },
+  {
+   "kind": "tools",
+   "title": "Plenty toolkit",
+   "text": "Tools used as Data Scientist at Plenty: Python, SageMaker, Google Colab, TensorFlow, Hugging Face.",
+   "source": "Data Scientist, Plenty",
+   "id": 30,
+   "x": 0.8174,
+   "y": 0.439,
+   "cluster": 1,
+   "outlier": false,
+   "tokens": 23
+  },
+  {
+   "kind": "context",
+   "title": "Techaccess",
+   "text": "Technical support and IT services for clients, specialising in Oracle databases and Linux systems.",
+   "source": "System Support Engineer, Techaccess",
+   "id": 31,
+   "x": 0.7516,
+   "y": 0.0667,
+   "cluster": 5,
+   "outlier": false,
+   "tokens": 16
+  },
+  {
+   "kind": "point",
+   "title": "Oracle and Linux admin",
+   "text": "Set up, administered and tuned Oracle RDBMS and Linux systems for client environments.",
+   "source": "System Support Engineer, Techaccess",
+   "id": 32,
+   "x": 0.7553,
+   "y": 0.1567,
+   "cluster": 5,
+   "outlier": false,
+   "tokens": 17
+  },
+  {
+   "kind": "point",
+   "title": "Backup and recovery",
+   "text": "Ran database backup and recovery using RMAN and Data Pump.",
+   "source": "System Support Engineer, Techaccess",
+   "id": 33,
+   "x": 0.6139,
+   "y": 0.0,
+   "cluster": 5,
+   "outlier": false,
+   "tokens": 12
+  },
+  {
+   "kind": "tools",
+   "title": "Techaccess toolkit",
+   "text": "Tools used as System Support Engineer at Techaccess: Oracle RDBMS, Red Hat Linux, SQL, VMware.",
+   "source": "System Support Engineer, Techaccess",
+   "id": 34,
+   "x": 0.6964,
+   "y": 0.1111,
+   "cluster": 5,
+   "outlier": false,
+   "tokens": 27
+  },
+  {
+   "kind": "education",
+   "title": "MSc Artificial Intelligence & Applications",
+   "text": "MSc Artificial Intelligence & Applications, University of Strathclyde. Thesis: NLP sentiment analysis using deep learning and transfer learning to work around limited training data.",
+   "source": "MSc Artificial Intelligence & Applications",
+   "id": 35,
+   "x": 0.6952,
+   "y": 0.7919,
+   "cluster": 0,
+   "outlier": false,
+   "tokens": 32
+  },
+  {
+   "kind": "education",
+   "title": "BSc Electrical Engineering",
+   "text": "BSc Electrical Engineering, National University of Computer and Emerging Sciences.",
+   "source": "BSc Electrical Engineering",
+   "id": 36,
+   "x": 1.0,
+   "y": 0.346,
+   "cluster": 1,
+   "outlier": false,
+   "tokens": 12
+  },
+  {
+   "kind": "skills",
+   "title": "Agent and LLM frameworks",
+   "text": "Agent and LLM frameworks: LangGraph, LangChain, LlamaIndex, CrewAI, Microsoft Agent Framework, Model Context Protocol, Pydantic, Azure AI Foundry.",
+   "source": "Skills: Agent and LLM frameworks",
+   "id": 37,
+   "x": 0.3567,
+   "y": 0.5955,
+   "cluster": 2,
+   "outlier": true,
+   "tokens": 39
+  },
+  {
+   "kind": "skills",
+   "title": "LLM engineering",
+   "text": "LLM engineering: RAG, prompt caching, tool calling, structured outputs, context engineering, LLM evaluation, fine-tuning (LoRA/PEFT), model routing.",
+   "source": "Skills: LLM engineering",
+   "id": 38,
+   "x": 0.2116,
+   "y": 0.5229,
+   "cluster": 2,
+   "outlier": false,
+   "tokens": 37
+  },
+  {
+   "kind": "skills",
+   "title": "Retrieval and vector search",
+   "text": "Retrieval and vector search: Qdrant, Pinecone, Azure AI Search, Redis.",
+   "source": "Skills: Retrieval and vector search",
+   "id": 39,
+   "x": 0.7267,
+   "y": 0.6402,
+   "cluster": 0,
+   "outlier": false,
+   "tokens": 20
+  },
+  {
+   "kind": "skills",
+   "title": "NLP",
+   "text": "NLP: embeddings and semantic search, text classification, named-entity recognition, sentiment analysis, topic modelling, transfer learning.",
+   "source": "Skills: NLP",
+   "id": 40,
+   "x": 0.7768,
+   "y": 0.7832,
+   "cluster": 0,
+   "outlier": false,
+   "tokens": 28
+  },
+  {
+   "kind": "skills",
+   "title": "Data science and ML",
+   "text": "Data science and ML: Python, NumPy, pandas, scikit-learn, PyTorch, TensorFlow, Hugging Face, statistical modelling, CNNs.",
+   "source": "Skills: Data science and ML",
+   "id": 41,
+   "x": 0.9777,
+   "y": 0.4677,
+   "cluster": 1,
+   "outlier": false,
+   "tokens": 36
+  },
+  {
+   "kind": "skills",
+   "title": "Production and infrastructure",
+   "text": "Production and infrastructure: Docker, AWS, CircleCI, OpenTelemetry, PostgreSQL, MongoDB, Linux.",
+   "source": "Skills: Production and infrastructure",
+   "id": 42,
+   "x": 0.5642,
+   "y": 0.2071,
+   "cluster": 4,
+   "outlier": false,
+   "tokens": 30
+  },
+  {
+   "kind": "fact",
+   "title": "About",
+   "text": "Based in the UK and open to relocation.",
+   "source": "About",
+   "id": 43,
+   "x": null,
+   "y": null,
+   "cluster": null,
+   "outlier": false,
+   "tokens": 9
+  },
+  {
+   "kind": "fact",
+   "title": "About",
+   "text": "Speaks English fluently; Urdu and Pashto are native languages.",
+   "source": "About",
+   "id": 44,
+   "x": null,
+   "y": null,
+   "cluster": null,
+   "outlier": false,
+   "tokens": 14
+  },
+  {
+   "kind": "fact",
+   "title": "About",
+   "text": "Five years in data science and machine learning, the last three putting language models into products.",
+   "source": "About",
+   "id": 45,
+   "x": null,
+   "y": null,
+   "cluster": null,
+   "outlier": false,
+   "tokens": 18
+  }
+ ],
+ "labels": [
+  {
+   "term": "C#",
+   "x": 0.2028,
+   "y": 0.8166,
+   "cluster": 3,
+   "passages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "term": "Python",
+   "x": 0.7989,
+   "y": 0.4304,
+   "cluster": 1,
+   "passages": [
+    26,
+    27
+   ]
+  },
+  {
+   "term": "Pydantic",
+   "x": 0.1738,
+   "y": 0.8315,
+   "cluster": 3,
+   "passages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "term": "CrewAI",
+   "x": 0.1926,
+   "y": 0.7882,
+   "cluster": 3,
+   "passages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "term": "Microsoft Agent Framework",
+   "x": 0.2106,
+   "y": 0.8433,
+   "cluster": 3,
+   "passages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "term": "Azure AI Search",
+   "x": 0.1525,
+   "y": 0.8099,
+   "cluster": 3,
+   "passages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "term": "Azure AI Foundry",
+   "x": 0.2257,
+   "y": 0.7939,
+   "cluster": 3,
+   "passages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "term": "Redis",
+   "x": 0.1782,
+   "y": 0.8609,
+   "cluster": 3,
+   "passages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "term": "OpenTelemetry",
+   "x": 0.1674,
+   "y": 0.7729,
+   "cluster": 3,
+   "passages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+   ]
+  },
+  {
+   "term": "AWS",
+   "x": 0.555,
+   "y": 0.3045,
+   "cluster": 4,
+   "passages": [
+    21,
+    24
+   ]
+  },
+  {
+   "term": "LLMs",
+   "x": 0.3233,
+   "y": 0.4367,
+   "cluster": 2,
+   "passages": [
+    13
+   ]
+  },
+  {
+   "term": "NLP",
+   "x": 0.7079,
+   "y": 0.7919,
+   "cluster": 0,
+   "passages": [
+    35
+   ]
+  },
+  {
+   "term": "TensorFlow",
+   "x": 0.5548,
+   "y": 0.4247,
+   "cluster": 1,
+   "passages": [
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    27,
+    28,
+    29
+   ]
+  },
+  {
+   "term": "Docker",
+   "x": 0.4709,
+   "y": 0.2576,
+   "cluster": 4,
+   "passages": [
+    18,
+    24
+   ]
+  },
+  {
+   "term": "n8n",
+   "x": 0.3868,
+   "y": 0.3618,
+   "cluster": 2,
+   "passages": [
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+   ]
+  },
+  {
+   "term": "Hugging Face",
+   "x": 0.5258,
+   "y": 0.4396,
+   "cluster": 1,
+   "passages": [
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    27,
+    28,
+    29
+   ]
+  },
+  {
+   "term": "LangChain",
+   "x": 0.4927,
+   "y": 0.4181,
+   "cluster": 4,
+   "passages": [
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    21,
+    22,
+    23,
+    24
+   ]
+  },
+  {
+   "term": "CircleCI",
+   "x": 0.451,
+   "y": 0.2359,
+   "cluster": 4,
+   "passages": [
+    18
+   ]
+  },
+  {
+   "term": "PostgreSQL",
+   "x": 0.5117,
+   "y": 0.0814,
+   "cluster": 5,
+   "passages": [
+    16,
+    17
+   ]
+  },
+  {
+   "term": "MongoDB",
+   "x": 0.5771,
+   "y": 0.2259,
+   "cluster": 5,
+   "passages": [
+    16,
+    21
+   ]
+  },
+  {
+   "term": "React",
+   "x": 0.6643,
+   "y": 0.5025,
+   "cluster": 4,
+   "passages": [
+    21,
+    22,
+    23,
+    24
+   ]
+  },
+  {
+   "term": "Qdrant",
+   "x": 0.8521,
+   "y": 0.7043,
+   "cluster": 3,
+   "passages": [
+    23
+   ]
+  },
+  {
+   "term": "Pinecone",
+   "x": 0.8231,
+   "y": 0.7192,
+   "cluster": 3,
+   "passages": [
+    23
+   ]
+  },
+  {
+   "term": "pytest",
+   "x": 0.6353,
+   "y": 0.5174,
+   "cluster": 4,
+   "passages": [
+    21,
+    22,
+    23,
+    24
+   ]
+  },
+  {
+   "term": "SageMaker",
+   "x": 0.7377,
+   "y": 0.5231,
+   "cluster": 1,
+   "passages": [
+    21,
+    22,
+    23,
+    24,
+    27,
+    28,
+    29
+   ]
+  },
+  {
+   "term": "Google Colab",
+   "x": 0.8525,
+   "y": 0.5506,
+   "cluster": 1,
+   "passages": [
+    27,
+    28,
+    29
+   ]
+  },
+  {
+   "term": "Oracle RDBMS",
+   "x": 0.7553,
+   "y": 0.1567,
+   "cluster": 5,
+   "passages": [
+    32
+   ]
+  },
+  {
+   "term": "Red Hat Linux",
+   "x": 0.6973,
+   "y": 0.0784,
+   "cluster": 5,
+   "passages": [
+    32,
+    33
+   ]
+  },
+  {
+   "term": "SQL",
+   "x": 0.6683,
+   "y": 0.0933,
+   "cluster": 5,
+   "passages": [
+    32,
+    33
+   ]
+  },
+  {
+   "term": "VMware",
+   "x": 0.6871,
+   "y": 0.05,
+   "cluster": 5,
+   "passages": [
+    32,
+    33
+   ]
+  },
+  {
+   "term": "LangGraph",
+   "x": 0.3694,
+   "y": 0.5955,
+   "cluster": 2,
+   "passages": [
+    37
+   ]
+  },
+  {
+   "term": "LlamaIndex",
+   "x": 0.3404,
+   "y": 0.6104,
+   "cluster": 2,
+   "passages": [
+    37
+   ]
+  },
+  {
+   "term": "Model Context Protocol",
+   "x": 0.3592,
+   "y": 0.5671,
+   "cluster": 2,
+   "passages": [
+    37
+   ]
+  },
+  {
+   "term": "RAG",
+   "x": 0.2243,
+   "y": 0.5229,
+   "cluster": 2,
+   "passages": [
+    38
+   ]
+  },
+  {
+   "term": "prompt caching",
+   "x": 0.0297,
+   "y": 0.9594,
+   "cluster": 3,
+   "passages": [
+    4
+   ]
+  },
+  {
+   "term": "tool calling",
+   "x": 0.1953,
+   "y": 0.5378,
+   "cluster": 2,
+   "passages": [
+    38
+   ]
+  },
+  {
+   "term": "structured outputs",
+   "x": 0.2141,
+   "y": 0.4945,
+   "cluster": 2,
+   "passages": [
+    38
+   ]
+  },
+  {
+   "term": "context engineering",
+   "x": 0.2321,
+   "y": 0.5496,
+   "cluster": 2,
+   "passages": [
+    38
+   ]
+  },
+  {
+   "term": "LLM evaluation",
+   "x": 0.174,
+   "y": 0.5162,
+   "cluster": 2,
+   "passages": [
+    38
+   ]
+  },
+  {
+   "term": "fine-tuning (LoRA/PEFT)",
+   "x": 0.2472,
+   "y": 0.5002,
+   "cluster": 2,
+   "passages": [
+    38
+   ]
+  },
+  {
+   "term": "model routing",
+   "x": 0.1997,
+   "y": 0.5672,
+   "cluster": 2,
+   "passages": [
+    38
+   ]
+  },
+  {
+   "term": "embeddings and semantic search",
+   "x": 0.7895,
+   "y": 0.7832,
+   "cluster": 0,
+   "passages": [
+    40
+   ]
+  },
+  {
+   "term": "text classification",
+   "x": 0.7605,
+   "y": 0.7981,
+   "cluster": 0,
+   "passages": [
+    40
+   ]
+  },
+  {
+   "term": "named-entity recognition",
+   "x": 0.7793,
+   "y": 0.7548,
+   "cluster": 0,
+   "passages": [
+    40
+   ]
+  },
+  {
+   "term": "sentiment analysis",
+   "x": 0.6789,
+   "y": 0.8068,
+   "cluster": 0,
+   "passages": [
+    35
+   ]
+  },
+  {
+   "term": "topic modelling",
+   "x": 0.7973,
+   "y": 0.8099,
+   "cluster": 0,
+   "passages": [
+    40
+   ]
+  },
+  {
+   "term": "transfer learning",
+   "x": 0.6977,
+   "y": 0.7635,
+   "cluster": 0,
+   "passages": [
+    35
+   ]
+  },
+  {
+   "term": "NumPy",
+   "x": 0.9904,
+   "y": 0.4677,
+   "cluster": 1,
+   "passages": [
+    41
+   ]
+  },
+  {
+   "term": "pandas",
+   "x": 0.9614,
+   "y": 0.4826,
+   "cluster": 1,
+   "passages": [
+    41
+   ]
+  },
+  {
+   "term": "scikit-learn",
+   "x": 0.9802,
+   "y": 0.4393,
+   "cluster": 1,
+   "passages": [
+    41
+   ]
+  },
+  {
+   "term": "PyTorch",
+   "x": 0.9982,
+   "y": 0.4944,
+   "cluster": 1,
+   "passages": [
+    41
+   ]
+  },
+  {
+   "term": "statistical modelling",
+   "x": 0.5352,
+   "y": 0.1221,
+   "cluster": 5,
+   "passages": [
+    16
+   ]
+  },
+  {
+   "term": "CNNs",
+   "x": 0.9401,
+   "y": 0.461,
+   "cluster": 1,
+   "passages": [
+    41
+   ]
+  },
+  {
+   "term": "Linux",
+   "x": 0.7534,
+   "y": 0.1117,
+   "cluster": 5,
+   "passages": [
+    31,
+    32
+   ]
+  }
+ ],
+ "vectors": "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",
+ "introTokens": {
+  "name": [
+   "muhammad",
+   "u",
+   "##zai",
+   "##r"
+  ],
+  "line": [
+   "i",
+   "build",
+   "ai",
+   "that",
+   "people",
+   "talk",
+   "to",
+   "."
+  ]
+ }
+}

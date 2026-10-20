@@ -1,0 +1,92 @@
+---
+// How far through the story the reader is, in the corner the map leaves empty.
+// Counted as CV tokens shown so far; see "reading progress" in src/data/story.ts.
+import { READING_TOTAL } from '../data/story';
+---
+
+<div
+  class="meter"
+  data-meter
+  data-visible="false"
+  role="progressbar"
+  aria-label="Reading progress"
+  aria-valuemin="0"
+  aria-valuemax={READING_TOTAL}
+  aria-valuenow="0"
+>
+  <span class="label"><span data-chapter></span> · <span class="mono"><span data-read>0</span> / {READING_TOTAL.toLocaleString('en-GB')} tokens</span></span>
+  <span class="bar" aria-hidden="true"><span data-fill></span></span>
+</div>
+
+<style>
+  .meter {
+    position: fixed;
+    right: var(--gutter);
+    bottom: clamp(1rem, 3vh, 1.75rem);
+    z-index: 2;
+    display: grid;
+    gap: 0.35rem;
+    width: 13rem;
+    color: var(--ink-3);
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: opacity 300ms ease-out;
+    pointer-events: none;
+  }
+
+  .meter[data-visible='true'] {
+    opacity: 1;
+  }
+
+  .label {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  [data-chapter] {
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+
+  .bar {
+    display: block;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--rule);
+    overflow: hidden;
+  }
+
+  [data-fill] {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: var(--ink-2);
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform 500ms ease-out;
+  }
+
+  /* Phones: a thin bar along the very top edge instead; the corner belongs to the ask button. */
+  @media (max-width: 959px) {
+    .meter {
+      inset: 0 0 auto;
+      width: auto;
+      z-index: 4;
+    }
+
+    .label {
+      display: none;
+    }
+
+    .bar {
+      height: 2px;
+      border-radius: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-fill] {
+      transition: none;
+    }
+  }
+</style>

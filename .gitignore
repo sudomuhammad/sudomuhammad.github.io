@@ -36,3 +36,9 @@ DESIGN.md
 
 # CV with private details; commit only a public-safe copy
 public/Muhammad_Uzair_CV.pdf
+
+# python (ml/)
+ml/.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/

@@ -1,0 +1,53 @@
+---
+import { person } from '../../data/cv';
+import Card from '../Card.astro';
+
+interface Props {
+  headingId: string;
+  title: string;
+  lede: string;
+}
+const { headingId, title, lede } = Astro.props;
+---
+
+<Card wide>
+  <h2 id={headingId}>{title}</h2>
+  <p>{lede} I’m based in the UK and open to relocation.</p>
+  <p class="email"><a href={`mailto:${person.email}`}>{person.email}</a></p>
+  <p class="links">
+    <a class="button" href={person.linkedin} rel="noopener">LinkedIn</a>
+  </p>
+</Card>
+
+<style>
+  .email {
+    font-size: var(--step-1);
+    font-weight: 650;
+  }
+
+  .email a {
+    color: var(--ink);
+    text-decoration-color: var(--agents);
+    text-decoration-thickness: 2px;
+  }
+
+  .button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 1.05rem;
+    border: 1px solid var(--ink);
+    border-radius: 999px;
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+      background-color 160ms ease-out,
+      color 160ms ease-out;
+  }
+
+  .button:hover {
+    background: var(--ink);
+    color: var(--ground);
+  }
+</style>

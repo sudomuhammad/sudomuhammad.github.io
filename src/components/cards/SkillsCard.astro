@@ -1,0 +1,21 @@
+---
+import Card from '../Card.astro';
+
+interface Props {
+  group: string;
+  items: string[];
+}
+const { group, items } = Astro.props;
+---
+
+<Card>
+  <h2>{group}</h2>
+  <p class="items">{items.join(', ')}</p>
+</Card>
+
+<style>
+  .items {
+    color: var(--ink);
+    line-height: 1.6;
+  }
+</style>
