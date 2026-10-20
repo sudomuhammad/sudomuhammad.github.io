@@ -16,6 +16,10 @@ updates:
     groups:
       npm:
         patterns: ['*']
+    ignore:
+      # @astrojs/check supports TypeScript 5 and 6 only; revisit when it supports 7.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: uv
     directory: /ml
@@ -24,3 +28,9 @@ updates:
     groups:
       python:
         patterns: ['*']
+    ignore:
+      # Held back on purpose for Intel-Mac wheels; see ml/pyproject.toml.
+      - dependency-name: numba
+      - dependency-name: llvmlite
+      - dependency-name: numpy
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']

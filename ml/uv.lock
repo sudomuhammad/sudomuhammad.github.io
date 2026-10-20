@@ -360,9 +360,9 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "huggingface-hub" },
-    { name = "llvmlite", specifier = "<0.45" },
-    { name = "numba", specifier = "<0.62" },
-    { name = "numpy" },
+    { name = "llvmlite", specifier = ">=0.44,<0.45" },
+    { name = "numba", specifier = ">=0.61,<0.62" },
+    { name = "numpy", specifier = "<2.3" },
     { name = "onnxruntime" },
     { name = "scikit-learn" },
     { name = "tokenizers" },

@@ -5,14 +5,17 @@ description = "Builds the embedding map of the CV for the portfolio site"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "huggingface-hub",
-    "numpy",
     "onnxruntime",
     "scikit-learn",
     "tokenizers",
     "umap-learn",
-    # Last releases with Intel-Mac wheels; newer ones only build from source there.
-    "numba<0.62",
-    "llvmlite<0.45",
+    # numba/llvmlite: the last releases with Intel-Mac wheels; newer ones only build
+    # from source there. Lower bounds stop the resolver falling back to ancient
+    # versions that don't support Python 3.12, and numpy is capped at what numba
+    # 0.61 supports (otherwise a numpy upgrade drags numba back to 0.53).
+    "numba>=0.61,<0.62",
+    "llvmlite>=0.44,<0.45",
+    "numpy<2.3",
 ]
 
 [dependency-groups]

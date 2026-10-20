@@ -20,6 +20,8 @@ jobs:
   checks:
     name: Tests and data checks
     runs-on: ubuntu-latest
+    env:
+      UV_LOCKED: 1 # use ml/uv.lock exactly; fail if it's out of date rather than re-resolving
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
