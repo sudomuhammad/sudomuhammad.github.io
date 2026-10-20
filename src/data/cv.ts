@@ -179,6 +179,5 @@ export const person = {
   location: 'UK, open to relocation',
   email: 'uzaiirr@outlook.com',
   linkedin: 'https://www.linkedin.com/in/muhammaduzair94',
-  cv: '/Muhammad_Uzair_CV.pdf',
   languages: 'English (fluent), Urdu and Pashto (native)',
 };

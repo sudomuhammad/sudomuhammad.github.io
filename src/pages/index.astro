@@ -26,8 +26,7 @@ const nameOf = Object.fromEntries(clusters.map((c) => [c.id, c.name]));
 
         <div class="actions">
           <a class="button primary" href={`mailto:${person.email}`}>Email me</a>
-          <a class="button" href={person.cv} download>Download CV</a>
-          <a class="button quiet" href={person.linkedin} rel="noopener">LinkedIn</a>
+          <a class="button" href={person.linkedin} rel="noopener">LinkedIn</a>
         </div>
 
         <div class="explore">
@@ -126,8 +125,7 @@ const nameOf = Object.fromEntries(clusters.map((c) => [c.id, c.name]));
       <p>I’m based in the UK and open to relocation. The quickest way to reach me is email.</p>
       <p class="contact-email"><a href={`mailto:${person.email}`}>{person.email}</a></p>
       <div class="actions">
-        <a class="button" href={person.cv} download>Download CV</a>
-        <a class="button quiet" href={person.linkedin} rel="noopener">LinkedIn</a>
+        <a class="button" href={person.linkedin} rel="noopener">LinkedIn</a>
       </div>
     </section>
   </main>
