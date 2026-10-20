@@ -81,7 +81,10 @@ export class ParticleSystem {
     while (i < this.count) put(random() * 1.2 - 0.1, random() * 1.2 - 0.1, noiseSlot);
   }
 
-  /** Advance one frame. `stiffness` ramps up during the intro so noise settles into clusters. */
+  /**
+   * Advance one frame. `stiffness` ramps up during the intro so noise settles into clusters.
+   * `jitter` keeps the cloud alive; anchors don't get it, because labels are drawn on them.
+   */
   step(stiffness: number, jitter: number, pointer: Pointer, phone: boolean): void {
     const radius = phone ? POINTER_RADIUS.phone : POINTER_RADIUS.desktop;
     const r2 = radius * radius;
@@ -99,8 +102,10 @@ export class ParticleSystem {
           ay += (dy / d) * f;
         }
       }
-      ax += (Math.random() - 0.5) * jitter;
-      ay += (Math.random() - 0.5) * jitter;
+      if (p >= this.anchorCount) {
+        ax += (Math.random() - 0.5) * jitter;
+        ay += (Math.random() - 0.5) * jitter;
+      }
       this.vx[p] = (this.vx[p] + ax) * DAMPING;
       this.vy[p] = (this.vy[p] + ay) * DAMPING;
       this.x[p] += this.vx[p];

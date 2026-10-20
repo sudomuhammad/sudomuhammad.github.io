@@ -21,13 +21,13 @@ describe('candidates', () => {
 describe('chooseSlot', () => {
   it('takes the right-hand slot when it is free', () => {
     const options = candidates(500, 400, 100, 12);
-    expect(chooseSlot(options, [], bounds, false)).toBe(options[0]);
+    expect(chooseSlot(options, [], bounds, false)?.slot).toBe(options[0]);
   });
 
   it('moves to the next free slot instead of overlapping', () => {
     const options = candidates(500, 400, 100, 12);
     const placed = chooseSlot(options, [options[0]], bounds, false);
-    expect(placed).toBe(options[1]);
+    expect(placed?.slot).toBe(options[1]);
   });
 
   it('places a tight cluster of labels without any overlap', () => {
@@ -37,26 +37,36 @@ describe('chooseSlot', () => {
     ];
     const taken: Box[] = [];
     for (const [x, y] of points) {
-      const slot = chooseSlot(candidates(x, y, 110, 11), taken, bounds, true)!;
+      const { slot } = chooseSlot(candidates(x, y, 110, 11), taken, bounds, true)!;
       expect(taken.some((t) => overlaps(slot, t))).toBe(false);
       taken.push(slot);
     }
   });
 
+  it('keeps last frame\'s slot while it is still free, even if a better one opened', () => {
+    const options = candidates(500, 400, 100, 12);
+    expect(chooseSlot(options, [], bounds, false, 1)?.index).toBe(1); // stays left, though right is free
+  });
+
+  it('leaves last frame\'s slot when something now covers it', () => {
+    const options = candidates(500, 400, 100, 12);
+    expect(chooseSlot(options, [options[1]], bounds, false, 1)?.index).toBe(0);
+  });
+
   it('two labels on one point never share a slot', () => {
-    const a = chooseSlot(candidates(500, 400, 100, 12), [], bounds, true)!;
-    const b = chooseSlot(candidates(500, 400, 120, 12), [a], bounds, true)!;
+    const a = chooseSlot(candidates(500, 400, 100, 12), [], bounds, true)!.slot;
+    const b = chooseSlot(candidates(500, 400, 120, 12), [a], bounds, true)!.slot;
     expect(overlaps(a, b)).toBe(false);
   });
 
   it('skips a normal label with no free slot, but still draws a forced one', () => {
     const options = candidates(500, 400, 100, 12);
     expect(chooseSlot(options, options, bounds, false)).toBeNull(); // every slot already taken
-    expect(chooseSlot(options, options, bounds, true)).toBe(options[0]);
+    expect(chooseSlot(options, options, bounds, true)?.slot).toBe(options[0]);
   });
 
   it('never chooses an off-screen slot when an on-screen one exists', () => {
     const options = candidates(990, 400, 100, 12); // right edge: the right slot is off screen
-    expect(chooseSlot(options, [], bounds, false)).toBe(options[1]);
+    expect(chooseSlot(options, [], bounds, false)?.slot).toBe(options[1]);
   });
 });
