@@ -30,6 +30,7 @@ updates:
         patterns: ['*']
     ignore:
       # Held back on purpose for Intel-Mac wheels; see ml/pyproject.toml.
+      - dependency-name: onnxruntime
       - dependency-name: numba
       - dependency-name: llvmlite
       - dependency-name: numpy
