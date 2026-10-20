@@ -78,8 +78,10 @@ const INTRO_FALLBACK_MS = 3000;
 const QUERY_WEIGHTS = [0.55, 0.28, 0.17];
 const CLOUD_POINT_SIZE = 3.2; // css px
 const TEXT_POINT_SIZE = 2.4;
-// Particle text needs every particle to cross the screen, so it uses much stiffer springs than the map.
-const TEXT_STIFFNESS = 0.045;
+// Particle text: springs start loose and tighten with an ease-in-out, so the cloud drifts in
+// and the letters sharpen at the end rather than snapping into place.
+const TEXT_STIFFNESS = { start: 0.001, end: 0.015 };
+const TEXT_FORM_MS = 2000; // at 60fps the address is legible by ~1.3s and settled by ~1.5s
 const TEXT_DENSITY = 34; // sample points per character height
 
 const css = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -117,6 +119,8 @@ export class MapStage {
   private hovered: number | null = null;
   private query = { active: false, x: 0, y: 0, vx: 0, vy: 0, targets: [] as number[], born: 0 };
   private started = performance.now();
+  /** When the current particle text began forming. */
+  private textStarted = 0;
   private revealed: boolean;
   private running = false;
 
@@ -172,7 +176,10 @@ export class MapStage {
     this.scene = scene;
     this.focusSlots = scene.focus ? new Set(scene.focus.map((id) => this.slotOf.get(id)!)) : null;
     this.litAnchors = new Set(scene.lit.map((id) => this.anchorOf.get(id)).filter((a) => a !== undefined));
-    if (textChanged) this.textTargets = scene.text ? this.sampleText(scene.text) : null;
+    if (textChanged) {
+      this.textTargets = scene.text ? this.sampleText(scene.text) : null;
+      this.textStarted = performance.now();
+    }
     this.setHovered(null);
     this.computeHomes();
     if (this.media.reduce.matches) this.renderStill();
@@ -302,10 +309,16 @@ export class MapStage {
   private step(now: number): void {
     // Springs stiffen over ~1.8s after a burst or scatter, so noise settles into clusters.
     const t = Math.min(1, (now - this.started) / 1800);
-    const stiffness = this.textTargets ? TEXT_STIFFNESS : 0.0025 + 0.0115 * (1 - (1 - t) ** 3);
+    const stiffness = this.textTargets ? this.textStiffness(now) : 0.0025 + 0.0115 * (1 - (1 - t) ** 3);
     this.particles.step(stiffness, this.textTargets ? 0.04 : 0.12, this.pointer, this.media.phone.matches);
     for (let s = 0; s < this.alpha.length; s++) this.alpha[s] += (this.targetAlpha(s) - this.alpha[s]) * 0.1;
     this.stepQuery();
+  }
+
+  private textStiffness(now: number): number {
+    const t = Math.min(1, (now - this.textStarted) / TEXT_FORM_MS);
+    const eased = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2; // ease-in-out cubic
+    return TEXT_STIFFNESS.start + (TEXT_STIFFNESS.end - TEXT_STIFFNESS.start) * eased;
   }
 
   private stepQuery(): void {
