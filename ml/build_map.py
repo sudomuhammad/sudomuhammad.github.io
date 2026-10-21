@@ -41,12 +41,26 @@ CV_PATH = ROOT / "src/data/cv.json"
 THEMES_PATH = ROOT / "src/data/themes.json"
 OUT_PATH = ROOT / "src/data/map.json"
 
-# The browser loads exactly this file via Transformers.js; keep both in sync.
-MODEL_REPO = "Xenova/all-MiniLM-L6-v2"
-MODEL_REVISION = "751bff37182d3f1213fa05d7196b954e230abad9"
-MODEL_FILE = "onnx/model_quantized.onnx"
-# MiniLM was trained on sequences up to 256 tokens; every CV passage is far shorter.
+# Small sentence models are trained on sequences up to 256-512 tokens; every CV passage is far shorter.
 MAX_TOKENS = 256
+
+
+@dataclass(frozen=True)
+class Encoder:
+    """A sentence-embedding model as the browser loads it: a quantised ONNX file at a pinned commit."""
+
+    repo: str
+    revision: str
+    pooling: Literal["mean", "cls"] = "mean"
+    # Some models are trained to see an instruction before a search query, or a marker before a passage.
+    query_prefix: str = ""
+    passage_prefix: str = ""
+    file: str = "onnx/model_quantized.onnx"
+
+
+# The map's model. The browser loads exactly this file via Transformers.js, reading the
+# details from map.json, so query vectors line up with the passages'.
+ENCODER = Encoder("Xenova/all-MiniLM-L6-v2", "751bff37182d3f1213fa05d7196b954e230abad9")
 
 
 @dataclass(frozen=True)
@@ -183,38 +197,43 @@ def load_themes(path: Path) -> list[Theme]:
 
 
 @cache
-def model_file(filename: str) -> str:
-    """Local path to a file from the pinned model revision (downloaded once, then cached)."""
+def model_file(encoder: Encoder, filename: str) -> str:
+    """Local path to a file from the encoder's pinned revision (downloaded once, then cached)."""
     from huggingface_hub import hf_hub_download
 
-    return hf_hub_download(MODEL_REPO, filename, revision=MODEL_REVISION)
+    return hf_hub_download(encoder.repo, filename, revision=encoder.revision)
 
 
 @cache
-def onnx_session():
-    """The quantised MiniLM model, loaded once per process."""
+def onnx_session(encoder: Encoder):
+    """The encoder's quantised model, loaded once per process."""
     import onnxruntime as ort
 
-    return ort.InferenceSession(model_file(MODEL_FILE), providers=["CPUExecutionProvider"])
+    return ort.InferenceSession(model_file(encoder, encoder.file), providers=["CPUExecutionProvider"])
 
 
-def load_tokenizer():
-    """A fresh MiniLM WordPiece tokenizer. Not cached: callers configure padding differently."""
+def load_tokenizer(encoder: Encoder = ENCODER):
+    """A fresh WordPiece tokenizer for the encoder. Not cached: callers configure padding differently."""
     from tokenizers import Tokenizer
 
-    tokenizer = Tokenizer.from_file(model_file("tokenizer.json"))
+    tokenizer = Tokenizer.from_file(model_file(encoder, "tokenizer.json"))
     # The shipped tokenizer.json pads and truncates to 128 tokens; counting needs the raw split.
     tokenizer.no_padding()
     tokenizer.no_truncation()
     return tokenizer
 
 
-def embed(texts: list[str]) -> NDArray[np.float32]:
-    """Embed texts as unit vectors, matching Transformers.js `{ pooling: 'mean', normalize: true }`."""
+def embed(texts: list[str], encoder: Encoder = ENCODER, *, queries: bool = False) -> NDArray[np.float32]:
+    """Embed texts as unit vectors, matching Transformers.js `{ pooling, normalize: true }`.
+
+    `queries` marks search questions rather than passages; each gets the encoder's own prefix.
+    """
     import numpy as np
 
-    session = onnx_session()
-    tokenizer = load_tokenizer()
+    prefix = encoder.query_prefix if queries else encoder.passage_prefix
+    texts = [prefix + t for t in texts]
+    session = onnx_session(encoder)
+    tokenizer = load_tokenizer(encoder)
     tokenizer.enable_padding(pad_id=0, pad_token="[PAD]")
     tokenizer.enable_truncation(max_length=MAX_TOKENS)
 
@@ -226,6 +245,8 @@ def embed(texts: list[str]) -> NDArray[np.float32]:
         feeds["token_type_ids"] = np.zeros_like(input_ids)
     hidden = session.run(None, feeds)[0]
 
+    if encoder.pooling == "cls":
+        return normalise_rows(hidden[:, 0])
     mask = attention_mask[..., None].astype(np.float32)
     pooled = (hidden * mask).sum(axis=1) / np.clip(mask.sum(axis=1), 1e-9, None)
     return normalise_rows(pooled)
@@ -370,7 +391,7 @@ def build(cv: dict[str, Any], themes: list[Theme]) -> dict[str, Any]:
     return {
         "generated": "by ml/build_map.py; do not edit by hand",
         "sourceHash": source_hash(*input_paths()),
-        "model": {"repo": MODEL_REPO, "revision": MODEL_REVISION, "file": MODEL_FILE, "dims": int(vectors.shape[1])},
+        "model": {**model_info(ENCODER), "dims": int(vectors.shape[1])},
         "themes": [
             {"id": i, **theme, "size": sum(p["theme"] == i for p in map_passages)} for i, theme in enumerate(themes)
         ],
@@ -381,6 +402,17 @@ def build(cv: dict[str, Any], themes: list[Theme]) -> dict[str, Any]:
             "name": wordpieces(cv["person"]["name"], tokenizer),
             "line": wordpieces(cv["person"]["line"], tokenizer),
         },
+    }
+
+
+def model_info(encoder: Encoder) -> dict[str, str]:
+    """What the browser needs to load the same model and embed questions the same way."""
+    return {
+        "repo": encoder.repo,
+        "revision": encoder.revision,
+        "file": encoder.file,
+        "pooling": encoder.pooling,
+        "queryPrefix": encoder.query_prefix,
     }
 
 

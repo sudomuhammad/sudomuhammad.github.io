@@ -15,7 +15,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "map:fixtures": "uv run --directory ml python query_fixtures.py",
-    "test": "vitest run"
+    "test": "vitest run",
+    "eval": "uv run --directory ml python evaluate_encoders.py"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",

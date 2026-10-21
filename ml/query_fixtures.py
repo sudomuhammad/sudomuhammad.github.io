@@ -37,11 +37,11 @@ def expand(query: str, terms: dict[str, str]) -> str:
 def main() -> None:
     terms = json.loads(ACRONYMS_PATH.read_text())["terms"]
     embedded = [expand(q, terms) for q in QUESTIONS]
-    vectors = bm.embed(embedded)
+    vectors = bm.embed(embedded, queries=True)
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     data = {
         "generated": "by ml/query_fixtures.py; do not edit by hand",
-        "model": {"repo": bm.MODEL_REPO, "revision": bm.MODEL_REVISION, "file": bm.MODEL_FILE},
+        "model": bm.model_info(bm.ENCODER),
         "queries": [
             {"question": q, "embedded": e, "vector": [round(float(x), 6) for x in v]}
             for q, e, v in zip(QUESTIONS, embedded, vectors, strict=True)

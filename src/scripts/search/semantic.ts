@@ -1,5 +1,5 @@
-// Loads MiniLM in the browser on first use. The library and model are fetched
-// lazily, so visitors who never ask a question download none of it.
+// Loads the map's sentence model in the browser on first use. The library and model
+// are fetched lazily, so visitors who never ask a question download none of it.
 import { model } from '../../data/map';
 
 export type LoadStatus =
@@ -35,8 +35,10 @@ export function loadEmbedder(onStatus: (status: LoadStatus) => void): Promise<Em
       },
     });
     onStatus({ state: 'ready' });
+    // Pooling and the query instruction come from map.json, as ml/build_map.py used them.
+    const pooling = model.pooling as 'mean' | 'cls';
     return async (text: string) => {
-      const output = await extractor(text, { pooling: 'mean', normalize: true });
+      const output = await extractor(model.queryPrefix + text, { pooling, normalize: true });
       return output.data as Float32Array;
     };
   })().catch((error: unknown) => {

@@ -13,7 +13,8 @@ const titlesOf = (ids: { id: number }[]) => ids.map(({ id }) => passages[id].tit
 
 describe('fixtures', () => {
   it('were embedded with the same model as the map', () => {
-    expect(fixtures.model).toEqual({ repo: model.repo, revision: model.revision, file: model.file });
+    const { dims: _, ...loaded } = model;
+    expect(fixtures.model).toEqual(loaded);
   });
 
   it('were embedded from exactly the text expandQuery produces (Python and TS agree)', () => {

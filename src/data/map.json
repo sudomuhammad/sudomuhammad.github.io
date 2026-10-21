@@ -1,10 +1,12 @@
 {
  "generated": "by ml/build_map.py; do not edit by hand",
- "sourceHash": "80903cbe092e7734",
+ "sourceHash": "c2d8557433bf0201",
  "model": {
   "repo": "Xenova/all-MiniLM-L6-v2",
   "revision": "751bff37182d3f1213fa05d7196b954e230abad9",
   "file": "onnx/model_quantized.onnx",
+  "pooling": "mean",
+  "queryPrefix": "",
   "dims": 384
  },
  "themes": [
