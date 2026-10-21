@@ -113,6 +113,33 @@ p {
   border: 0;
 }
 
+/* Pill links: outlined, or ink-filled for the primary action. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 0 1.05rem;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color 160ms ease-out,
+    color 160ms ease-out;
+}
+
+.button:hover,
+.button.primary {
+  background: var(--ink);
+  color: var(--ground);
+}
+
+.button.primary:hover {
+  background: var(--ink-2);
+  border-color: var(--ink-2);
+}
+
 .mono {
   font-family: var(--mono);
   font-size: 0.86em;

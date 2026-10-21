@@ -4,34 +4,35 @@ import type { Chapter } from '../data/story';
 import Card from './Card.astro';
 import Step from './Step.astro';
 import ApproachCard from './cards/ApproachCard.astro';
-import ClusterCard from './cards/ClusterCard.astro';
 import ContactCard from './cards/ContactCard.astro';
-import SkillsCard from './cards/SkillsCard.astro';
+import ExperienceCard from './cards/ExperienceCard.astro';
+import SectionCard from './cards/SectionCard.astro';
 
 interface Props {
   chapter: Chapter;
 }
 const { chapter } = Astro.props;
+const headingId = `${chapter.id}-title`;
 ---
 
-<section class="chapter" aria-labelledby={`${chapter.id}-title`}>
+<section class="chapter" aria-labelledby={headingId}>
   {
     chapter.steps.map((step) => (
       <Step id={step.id} align={step.kind === 'contact' ? 'centre' : 'side'}>
         {step.kind === 'chapter' && (
-          <Card>
-            <h2 id={`${chapter.id}-title`} class="chapter-title">
+          <Card labelledby={headingId}>
+            <h2 id={headingId} class="chapter-title">
               {chapter.title}
             </h2>
             <p>{chapter.lede}</p>
           </Card>
         )}
-        {step.kind === 'approach' && (
-          <ApproachCard headingId={`${chapter.id}-title`} title={chapter.title} principles={step.principles} />
+        {step.kind === 'section' && <SectionCard theme={step.theme} evidence={step.evidence} skills={step.skills} />}
+        {step.kind === 'approach' && <ApproachCard headingId={headingId} title={chapter.title} principles={step.principles} />}
+        {step.kind === 'experience' && (
+          <ExperienceCard headingId={headingId} title={chapter.title} lede={chapter.lede} roles={step.roles} education={step.education} />
         )}
-        {step.kind === 'cluster' && <ClusterCard {...step} />}
-        {step.kind === 'skills' && <SkillsCard group={step.group} summary={step.summary} items={step.items} />}
-        {step.kind === 'contact' && <ContactCard headingId={`${chapter.id}-title`} title={chapter.title} lede={chapter.lede} />}
+        {step.kind === 'contact' && <ContactCard headingId={headingId} title={chapter.title} lede={chapter.lede} />}
       </Step>
     ))
   }

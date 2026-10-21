@@ -1,11 +1,12 @@
 ---
-// The first screen: just the name. With the intro running (html.intro, set in
-// <head>), it first appears as its WordPiece tokens, which burst into the map.
-import { person } from '../data/cv';
-import { clusters, introTokens } from '../data/map';
+// The first screen: the name, what I do, and how to reach me. With the intro running
+// (html.intro, set in <head>), the name first appears as its WordPiece tokens, which
+// burst into the map.
+import { CV_PDF, person, roles } from '../data/cv';
+import { introTokens, themes } from '../data/map';
 
 const rows = [introTokens.name, introTokens.line];
-const colorAt = (i: number) => clusters[i % clusters.length].color;
+const colorAt = (i: number) => themes[i % themes.length].color;
 ---
 
 <section class="intro" id="top" data-step="top" aria-labelledby="name">
@@ -33,7 +34,15 @@ const colorAt = (i: number) => clusters[i % clusters.length].color;
       }
     </div>
   </div>
-  <p class="meta">{person.role} at Money Means, based in the UK and open to relocation</p>
+  <div class="about">
+    <p class="meta">{person.role}, most recently at {roles[0].org}</p>
+    <p class="meta"><strong>{person.availability}</strong> · {person.location}</p>
+  </div>
+  <p class="actions">
+    <a class="button primary" href={`mailto:${person.email}`}>Email me</a>
+    <a class="button" href={person.linkedin} rel="noopener">LinkedIn</a>
+    <a class="button" href={CV_PDF} download>Download CV</a>
+  </p>
   <p class="hint">Scroll to explore the map of my work</p>
 </section>
 
@@ -58,7 +67,8 @@ const colorAt = (i: number) => clusters[i % clusters.length].color;
   }
 
   h1 {
-    font-size: clamp(3rem, 2rem + 6vw, 7.5rem);
+    /* Capped by the viewport too, so the name still fits a phone with text enlarged. */
+    font-size: min(clamp(3rem, 2rem + 6vw, 7.5rem), 16vw);
     font-weight: 700;
     letter-spacing: -0.035em;
     line-height: 0.92;
@@ -70,10 +80,28 @@ const colorAt = (i: number) => clusters[i % clusters.length].color;
     font-weight: 500;
   }
 
+  .about {
+    display: grid;
+    gap: 0.2rem;
+  }
+
   .meta,
   .hint {
     color: var(--ink-3);
     font-size: var(--step--1);
+  }
+
+  .meta strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+    pointer-events: auto; /* the rest of the intro lets the map take the pointer */
   }
 
   .hint {
@@ -132,7 +160,8 @@ const colorAt = (i: number) => clusters[i % clusters.length].color;
      script never runs; once it runs (.intro-js) it decides when the headline appears. */
   :global(html.intro) .headline > h1,
   :global(html.intro) .headline > .line,
-  :global(html.intro) .meta,
+  :global(html.intro) .about,
+  :global(html.intro) .actions,
   :global(html.intro) .hint {
     opacity: 0;
     animation: fade-in 500ms ease-out 2.6s forwards;
@@ -140,14 +169,16 @@ const colorAt = (i: number) => clusters[i % clusters.length].color;
 
   :global(html.intro-js) .headline > h1,
   :global(html.intro-js) .headline > .line,
-  :global(html.intro-js) .meta,
+  :global(html.intro-js) .about,
+  :global(html.intro-js) .actions,
   :global(html.intro-js) .hint {
     animation: none;
   }
 
   :global(html.intro-done) .headline > h1,
   :global(html.intro-done) .headline > .line,
-  :global(html.intro-done) .meta,
+  :global(html.intro-done) .about,
+  :global(html.intro-done) .actions,
   :global(html.intro-done) .hint {
     animation: fade-in 600ms ease-out 120ms forwards;
   }

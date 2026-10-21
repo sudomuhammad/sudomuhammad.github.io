@@ -3,7 +3,8 @@
     "name": "Muhammad Uzair",
     "role": "AI Engineer",
     "line": "I build AI that people talk to.",
-    "summary": "Five years in data science and machine learning, the last three putting language models into products. Currently Aida, an AI financial adviser, where the answers have to be right as well as fast. I like problems where the model is only half the job; the rest is making it quick, keeping the data honest, and getting it into people’s hands.",
+    "summary": "Five years in data science and machine learning, the last three putting language models into products. Most recently Aida, an AI financial adviser, where the answers had to be right as well as fast. I like problems where the model is only half the job; the rest is making it quick, keeping the data honest, and getting it into people’s hands.",
+    "availability": "Available now",
     "location": "UK, open to relocation",
     "email": "uzaiirr@outlook.com",
     "linkedin": "https://www.linkedin.com/in/muhammaduzair94",
@@ -11,44 +12,36 @@
   },
   "skills": [
     {
-      "group": "Agent and LLM frameworks",
+      "theme": "agents",
       "items": [
-        "LangGraph",
-        "LangChain",
-        "LlamaIndex",
-        "CrewAI",
         "Microsoft Agent Framework",
+        "CrewAI",
+        "LangChain",
         "Model Context Protocol",
         "Pydantic",
-        "Azure AI Foundry"
+        "Azure AI Foundry",
+        "tool calling",
+        "model routing",
+        "LLM evaluation",
+        "fine-tuning (LoRA/PEFT)"
       ]
     },
     {
-      "group": "LLM engineering",
+      "theme": "context",
+      "items": [
+        "context engineering",
+        "prompt caching",
+        "structured outputs"
+      ]
+    },
+    {
+      "theme": "nlp",
       "items": [
         "RAG",
-        "prompt caching",
-        "tool calling",
-        "structured outputs",
-        "context engineering",
-        "LLM evaluation",
-        "fine-tuning (LoRA/PEFT)",
-        "model routing"
-      ]
-    },
-    {
-      "group": "Retrieval and vector search",
-      "items": [
+        "embeddings and semantic search",
+        "Azure AI Search",
         "Qdrant",
         "Pinecone",
-        "Azure AI Search",
-        "Redis"
-      ]
-    },
-    {
-      "group": "NLP",
-      "items": [
-        "embeddings and semantic search",
         "text classification",
         "named-entity recognition",
         "sentiment analysis",
@@ -57,7 +50,7 @@
       ]
     },
     {
-      "group": "Data science and ML",
+      "theme": "data",
       "items": [
         "Python",
         "NumPy",
@@ -71,20 +64,24 @@
       ]
     },
     {
-      "group": "Production and infrastructure",
+      "theme": "eng",
       "items": [
+        "C#",
+        "Flask",
         "Docker",
         "AWS",
         "CircleCI",
         "OpenTelemetry",
         "PostgreSQL",
         "MongoDB",
+        "Redis",
         "Linux"
       ]
     }
   ],
   "facts": [
     "Based in the UK and open to relocation.",
+    "Available to start now.",
     "Speaks English fluently; Urdu and Pashto are native languages.",
     "Five years in data science and machine learning, the last three putting language models into products."
   ],
@@ -93,48 +90,55 @@
       "title": "AI Engineer",
       "org": "Money Means",
       "start": "08/2025",
-      "end": "Present",
-      "context": "Aida is an AI financial adviser. I’m responsible for the parts of it that understand what a user says, remember it, and use it in later conversations.",
+      "end": "10/2026",
+      "theme": "agents",
+      "context": "Aida was an AI financial adviser. I was responsible for the parts of it that understood what a user said, remembered it, and used it in later conversations. Money Means closed in October 2026.",
       "points": [
         {
           "title": "Aida’s chat agent",
-          "text": "Own the language-model agent behind Aida’s chat: tool selection, conversation flow, and how facts a user shares are captured and reused."
+          "text": "Owned the language-model agent behind Aida’s chat: tool selection, conversation flow, and how facts a user shared were captured and reused."
         },
         {
-          "title": "Single-call extraction",
-          "text": "Replaced a multi-call extraction loop with a single-call design that is markedly faster, with no loss in accuracy."
-        },
-        {
+          "theme": "context",
           "title": "Tool selection step",
-          "text": "Designed the step that decides which tools the model sees for each message, so it picks the right one far more often."
-        },
-        {
-          "title": "Prompt caching",
-          "text": "Introduced prompt caching across all model calls by separating the fixed and per-turn parts of each prompt."
+          "text": "Designed the step that decides which tools the model sees for each message, so it picked the right one far more often."
         },
         {
           "title": "Agent tool contracts",
-          "text": "Set the patterns the team builds agent tools against: a typed contract per tool, structured JSON output per model call, and one place that defines what each tool needs before it can run."
-        },
-        {
-          "title": "Guarded financial data writes",
-          "text": "Designed how the agent reads and writes financial data: typed profile writes behind a confidence threshold, tools gated on what the user’s accounts contain, and no unvalidated writes from the model."
-        },
-        {
-          "title": "Per-turn context",
-          "text": "Own what the model sees each turn (history, rolling summary, user profile) so accuracy holds as conversations grow."
+          "text": "Set the patterns the team built agent tools against: a typed contract per tool, structured JSON output per model call, and one place that defines what each tool needs before it can run."
         },
         {
           "title": "Model routing and failover",
           "text": "Routed models per task, a small model for classification and tool selection and a larger one for the reply, with automatic failover; migrated services between model generations without regressions."
         },
         {
+          "theme": "context",
+          "title": "Single-call extraction",
+          "text": "Replaced a multi-call extraction loop with a single-call design that was markedly faster, with no loss in accuracy."
+        },
+        {
+          "theme": "context",
+          "title": "Prompt caching",
+          "text": "Introduced prompt caching across all model calls by separating the fixed and per-turn parts of each prompt."
+        },
+        {
+          "theme": "context",
+          "title": "Per-turn context",
+          "text": "Owned what the model saw each turn (history, rolling summary, user profile) so accuracy held as conversations grew."
+        },
+        {
+          "theme": "context",
+          "title": "Guarded financial data writes",
+          "text": "Designed how the agent read and wrote financial data: typed profile writes behind a confidence threshold, tools gated on what the user’s accounts contained, and no unvalidated writes from the model."
+        },
+        {
           "title": "Agent regression tests",
           "text": "Built automated regression testing for the agent: fixed conversation datasets with expected tool calls and outputs, run on every prompt, tool and model change."
         },
         {
+          "theme": "context",
           "title": "Prompt-assembly visualiser",
-          "text": "Built a prompt-assembly visualiser that shows exactly what the model saw on any turn."
+          "text": "Built a prompt-assembly visualiser that showed exactly what the model saw on any turn."
         }
       ],
       "tech": [
@@ -154,13 +158,16 @@
       "org": "VUE group",
       "start": "11/2023",
       "end": "07/2025",
-      "context": "Data science and backend work for a vehicle fleet business: research, proof-of-concept builds and analytics for internal teams.",
+      "theme": "data",
+      "context": "Data science and backend work for a vehicle fleet business: research, proof-of-concept builds, statistical analysis and deployment pipelines for internal teams.",
       "points": [
         {
+          "theme": "agents",
           "title": "Conversational analytics",
           "text": "Developed and deployed conversational data-visualisation services using LLMs and Dash, so non-technical users could query real-time analytics in plain language."
         },
         {
+          "theme": "agents",
           "title": "AI research briefs",
           "text": "Evaluated new AI tools and wrote research briefs that senior leadership used to decide what to invest in."
         },
@@ -169,16 +176,9 @@
           "text": "Built a vehicle utilisation and monitoring system that cut manual reporting by 70%."
         },
         {
-          "title": "Statistical modelling",
-          "text": "Ran statistical modelling and exploratory analysis across MSSQL, PostgreSQL and MongoDB."
-        },
-        {
+          "theme": "eng",
           "title": "MSSQL to PostgreSQL migration",
           "text": "Migrated databases from MSSQL to PostgreSQL with no data loss, improving query performance."
-        },
-        {
-          "title": "CI/CD pipelines",
-          "text": "Managed deployment pipelines with CircleCI and Docker, reducing release times."
         }
       ],
       "tech": [
@@ -201,23 +201,22 @@
       "org": "Innervoices S.L.",
       "start": "02/2023",
       "end": "11/2023",
+      "theme": "agents",
       "context": "A start-up building a web product that helped people talk through personal issues from both an emotional and a rational perspective. I owned the backend and deployment in a small team; we paused in late 2023 when funding ran out.",
       "points": [
-        {
-          "title": "Flask APIs on Fargate",
-          "text": "Built Flask REST APIs backed by MongoDB and deployed them on AWS Fargate."
-        },
         {
           "title": "Open-source LLM features",
           "text": "Used open-source language models for the product’s AI features, and curated the datasets behind them."
         },
         {
+          "theme": "nlp",
           "title": "RAG with Qdrant and Pinecone",
-          "text": "Built retrieval-augmented generation with Qdrant and Pinecone, reducing hallucinations."
+          "text": "Built retrieval-augmented generation with Qdrant and Pinecone, so the product’s answers were grounded in retrieved sources."
         },
         {
-          "title": "Containerised deploys",
-          "text": "Containerised the services with Docker and deployed with AWS CDK and Fargate, with SSL for HTTPS."
+          "theme": "eng",
+          "title": "APIs and deployment",
+          "text": "Built Flask REST APIs backed by MongoDB, containerised them with Docker and deployed them on AWS Fargate with AWS CDK, with SSL for HTTPS."
         }
       ],
       "tech": [
@@ -239,6 +238,7 @@
       "place": "Barcelona",
       "start": "10/2021",
       "end": "04/2022",
+      "theme": "data",
       "context": "Python, machine learning and deep learning to speed up data collection and research at an early-stage start-up.",
       "points": [
         {
@@ -246,12 +246,8 @@
           "text": "Developed a Python web scraper that collected over half a million descriptions and stock quotes."
         },
         {
-          "title": "ML models, 90%+ accuracy",
-          "text": "Designed and implemented machine-learning models on my own, reaching over 90% accuracy."
-        },
-        {
-          "title": "CNN image models",
-          "text": "Tested image-processing models using CNN architectures (VGG-16, Inception)."
+          "title": "ML and image models",
+          "text": "Designed and built the start-up’s machine-learning models on my own, and tested CNN image models (VGG-16, Inception)."
         }
       ],
       "tech": [
@@ -268,17 +264,9 @@
       "place": "Pakistan",
       "start": "01/2018",
       "end": "10/2020",
-      "context": "Technical support and IT services for clients, specialising in Oracle databases and Linux systems.",
-      "points": [
-        {
-          "title": "Oracle and Linux admin",
-          "text": "Set up, administered and tuned Oracle RDBMS and Linux systems for client environments."
-        },
-        {
-          "title": "Backup and recovery",
-          "text": "Ran database backup and recovery using RMAN and Data Pump."
-        }
-      ],
+      "theme": "eng",
+      "context": "Technical support and IT services for clients: set up, administered and tuned Oracle databases and Red Hat Linux systems, including backup and recovery with RMAN and Data Pump.",
+      "points": [],
       "tech": [
         "Oracle RDBMS",
         "Red Hat Linux",
@@ -293,6 +281,7 @@
       "org": "University of Strathclyde",
       "start": "09/2020",
       "end": "09/2021",
+      "theme": "nlp",
       "note": "Thesis: NLP sentiment analysis using deep learning and transfer learning to work around limited training data."
     },
     {

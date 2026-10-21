@@ -1,0 +1,70 @@
+---
+// Every role and degree on one card, with the full CV a click away. Pointing at a role
+// rings its work on the map; the detail of each role is in the Work sections above.
+import { CV_PDF, period, type Education } from '../../data/cv';
+import type { RoleEntry } from '../../data/story';
+import Card from '../Card.astro';
+import Pointables from '../Pointables.astro';
+
+interface Props {
+  headingId: string;
+  title: string;
+  lede: string;
+  roles: RoleEntry[];
+  education: Education[];
+}
+const { headingId, title, lede, roles, education } = Astro.props;
+
+const items = roles.map(({ role }) => ({
+  title: `${role.title}, ${role.org}`,
+  meta: [period(role), role.place].filter(Boolean).join(' · '),
+  text: role.context,
+}));
+---
+
+<Card labelledby={headingId}>
+  <h2 id={headingId}>{title}</h2>
+  <p class="lede">{lede}</p>
+  <Pointables items={items} compact />
+  <h3>Education</h3>
+  <ul class="degrees">
+    {
+      education.map((e) => (
+        <li>
+          <span class="degree">{e.degree}</span>
+          <span class="meta">
+            {e.org} · <span class="mono">{period(e)}</span>
+          </span>
+        </li>
+      ))
+    }
+  </ul>
+  <p class="download">
+    <a class="button" href={CV_PDF} download>Download CV (PDF)</a>
+  </p>
+</Card>
+
+<style>
+  .lede {
+    margin-bottom: 0.8rem;
+  }
+
+  h3 {
+    margin: 1.2rem 0 0.5rem;
+    font-size: var(--step-0);
+  }
+
+  .degree {
+    display: block;
+    color: var(--ink);
+    font-weight: 650;
+  }
+
+  .degrees .meta {
+    font-weight: 400;
+  }
+
+  .download {
+    margin-top: 1.2rem;
+  }
+</style>

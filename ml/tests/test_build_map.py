@@ -2,12 +2,16 @@
 
 import base64
 import json
-from typing import ClassVar
 
 import numpy as np
 import pytest
 
 import build_map as bm
+
+THEMES: list[bm.Theme] = [
+    {"key": "llm", "name": "LLM work", "summary": "", "color": "#f00"},
+    {"key": "ml", "name": "ML", "summary": "", "color": "#0f0"},
+]
 
 CV = {
     "person": {"line": "I build AI.", "summary": "Five years."},
@@ -15,35 +19,43 @@ CV = {
         {
             "title": "AI Engineer",
             "org": "Acme",
+            "theme": "llm",
             "context": "Builds agents.",
             "points": [
                 {"title": "RAG", "text": "Built RAG with Qdrant."},
-                {"title": "Deploys", "text": "Deployed with Docker."},
+                {"title": "Deploys", "text": "Deployed with Docker.", "theme": "ml"},
             ],
             "tech": ["Qdrant", "Docker", "Rust"],
         },
-        {"title": "Analyst", "org": "Beta", "context": "Reports.", "points": [], "tech": ["Excel"]},
+        {"title": "Analyst", "org": "Beta", "theme": "ml", "context": "Reports.", "points": [], "tech": ["Excel"]},
     ],
-    "education": [{"degree": "MSc AI", "org": "Uni", "note": "Thesis on NLP."}, {"degree": "BSc EE", "org": "Uni"}],
-    "skills": [{"group": "NLP", "items": ["topic modelling", "Qdrant"]}],
+    "education": [
+        {"degree": "MSc AI", "org": "Uni", "theme": "ml", "note": "Thesis on NLP."},
+        {"degree": "BSc EE", "org": "Uni"},
+    ],
+    "skills": [{"theme": "ml", "items": ["topic modelling", "Qdrant"]}],
     "facts": ["Open to relocation."],
 }
 
 
+def collect(cv=CV):
+    return bm.collect_passages(cv, THEMES)
+
+
 def placed(passages, positions):
-    """Give map passages fixed positions and clusters, as build() would."""
+    """Give drawn passages fixed positions (and optionally themes), as build() would."""
     for p in passages:
-        if p["kind"] in bm.OFF_MAP_KINDS:
-            p.update(x=None, y=None, cluster=None, outlier=False)
+        if p["theme"] is None:
+            p.update(x=None, y=None)
         else:
-            x, y, c = positions.get(p["id"], (0.5, 0.5, 0))
-            p.update(x=x, y=y, cluster=c, outlier=False)
+            x, y, theme = positions.get(p["id"], (0.5, 0.5, p["theme"]))
+            p.update(x=x, y=y, theme=theme)
     return passages
 
 
 class TestCollectPassages:
     def test_ids_are_sequential_and_kinds_cover_cv(self):
-        passages = bm.collect_passages(CV)
+        passages = collect()
         assert [p["id"] for p in passages] == list(range(len(passages)))
         kinds = [p["kind"] for p in passages]
         assert kinds.count("point") == 2
@@ -53,96 +65,68 @@ class TestCollectPassages:
         assert kinds.count("fact") == 1
 
     def test_every_passage_has_a_title(self):
-        passages = bm.collect_passages(CV)
+        passages = collect()
         titles = {p["kind"]: p["title"] for p in passages}
         assert [p["title"] for p in passages if p["kind"] == "point"] == ["RAG", "Deploys"]
         assert titles["context"] == "Beta"  # role context is titled by its org
         assert titles["tools"] == "Beta toolkit"
-        assert titles["skills"] == "NLP"
+        assert titles["skills"] == "ML"  # skills are titled by their theme
         assert all(p["title"] for p in passages)
 
     def test_education_note_is_optional(self):
-        texts = [p["text"] for p in bm.collect_passages(CV) if p["kind"] == "education"]
+        texts = [p["text"] for p in collect() if p["kind"] == "education"]
         assert texts == ["MSc AI, Uni. Thesis on NLP.", "BSc EE, Uni."]
 
+    def test_points_inherit_the_role_theme_unless_they_name_one(self):
+        themes = {p["title"]: p["theme"] for p in collect() if p["kind"] in ("point", "context", "tools")}
+        assert themes == {"Acme": 0, "RAG": 0, "Deploys": 1, "Acme toolkit": 0, "Beta": 1, "Beta toolkit": 1}
 
-class TestAttachNoise:
-    def test_noise_joins_most_similar_cluster_by_cosine(self):
-        # Cluster 0 is many tight points; cluster 1 is a single point. The noise
-        # vector points almost exactly at cluster 1, so cosine must pick 1 even
-        # though cluster 0 is larger.
-        vectors = bm.normalise_rows(np.array([[1, 0], [1, 0.01], [1, -0.01], [0, 1], [0.05, 1]], dtype=np.float32))
-        labels = np.array([0, 0, 0, 1, -1])
-        out = bm.attach_noise(vectors, labels, labels >= 0)
-        assert out.tolist() == [0, 0, 0, 1, 1]
+    def test_untagged_passages_are_not_drawn(self):
+        untagged = {p["title"] for p in collect() if p["theme"] is None}
+        assert untagged == {"BSc EE", "About"}
 
-    def test_does_not_mutate_input(self):
-        vectors = bm.normalise_rows(np.eye(3, dtype=np.float32))
-        labels = np.array([0, 1, -1])
-        bm.attach_noise(vectors, labels, labels >= 0)
-        assert labels.tolist() == [0, 1, -1]
-
-
-class TestMatchNames:
-    approved: ClassVar[list[bm.NamedCluster]] = [
-        {"key": "agents", "name": "Agents", "summary": "a", "color": "#f00", "terms": ["agent", "tool", "model"]},
-        {"key": "shipping", "name": "Shipping", "summary": "s", "color": "#0f0", "terms": ["docker", "aws", "deploy"]},
-    ]
-
-    def test_matches_by_overlap_regardless_of_cluster_ids(self):
-        terms = {7: ["docker", "aws", "python"], 3: ["agent", "model", "prompt"]}
-        names = bm.match_names(terms, self.approved, min_overlap=2)
-        assert (names[7]["name"], names[7]["key"], names[7]["color"]) == ("Shipping", "shipping", "#0f0")
-        assert names[3]["name"] == "Agents"
-        assert all(n["approved"] for n in names.values())
-
-    def test_each_name_is_used_once_best_overlap_wins(self):
-        terms = {0: ["agent", "tool", "model"], 1: ["agent", "tool", "x"]}
-        names = bm.match_names(terms, self.approved, min_overlap=2)
-        assert names[0]["name"] == "Agents"
-        assert names[1]["approved"] is False
-
-    def test_low_overlap_gets_placeholder(self):
-        names = bm.match_names({0: ["oracle", "linux", "sql"]}, self.approved, min_overlap=2)
-        assert names[0] == {
-            "key": "cluster-0",
-            "name": "oracle, linux, sql",
-            "summary": "",
-            "color": bm.PLACEHOLDER_COLOR,
-            "approved": False,
-        }
+    def test_unknown_theme_fails_loudly(self):
+        cv = {**CV, "skills": [{"theme": "nope", "items": []}]}
+        with pytest.raises(ValueError, match="unknown theme 'nope'"):
+            collect(cv)
 
 
 class TestSkillLabels:
     def test_tool_placed_at_centre_of_passages_mentioning_it(self):
-        passages = placed(bm.collect_passages(CV), {1: (0.2, 0.4, 1), 2: (0.8, 0.6, 2)})
+        passages = placed(collect(), {1: (0.2, 0.4, 1), 2: (0.8, 0.6, 2)})
         labels = {label["term"]: label for label in bm.skill_labels(CV, passages)}
-        assert (labels["Qdrant"]["x"], labels["Qdrant"]["y"], labels["Qdrant"]["cluster"]) == (0.2, 0.4, 1)
+        assert (labels["Qdrant"]["x"], labels["Qdrant"]["y"], labels["Qdrant"]["theme"]) == (0.2, 0.4, 1)
 
     def test_unmentioned_tool_falls_back_to_role_points(self):
-        passages = placed(bm.collect_passages(CV), {1: (0.2, 0.2, 1), 2: (0.4, 0.4, 1)})
+        passages = placed(collect(), {1: (0.2, 0.2, 1), 2: (0.4, 0.4, 1)})
         labels = {label["term"]: label for label in bm.skill_labels(CV, passages)}
         assert labels["Rust"]["x"] == pytest.approx(0.3)
 
     def test_tool_with_no_evidence_is_skipped_not_nan(self):
-        # "Excel" is never mentioned and its role has no bullet points.
-        passages = placed(bm.collect_passages(CV), {})
-        labels = bm.skill_labels(CV, passages)
+        # "Excel" is never mentioned, its role has no bullet points, and its untagged context isn't drawn.
+        beta = {k: v for k, v in CV["roles"][1].items() if k != "theme"}
+        cv = {**CV, "roles": [CV["roles"][0], beta]}
+        labels = bm.skill_labels(cv, placed(collect(cv), {}))
         assert "Excel" not in {label["term"] for label in labels}
         json.dumps(labels, allow_nan=False)
 
+    def test_role_without_points_falls_back_to_its_context(self):
+        passages = placed(collect(), {})
+        labels = {label["term"]: label for label in bm.skill_labels(CV, passages)}
+        assert [passages[i]["title"] for i in labels["Excel"]["passages"]] == ["Beta"]
+
     def test_declared_skill_falls_back_to_its_skills_group(self):
-        passages = placed(bm.collect_passages(CV), {})
+        passages = placed(collect(), {})
         group = next(p for p in passages if p["kind"] == "skills")
-        group.update(x=0.9, y=0.1, cluster=3)
+        group.update(x=0.9, y=0.1)
         labels = {label["term"]: label for label in bm.skill_labels(CV, passages)}
         assert labels["topic modelling"]["passages"] == [group["id"]]
-        assert labels["topic modelling"]["cluster"] == 3
+        assert labels["topic modelling"]["theme"] == 1
 
     def test_list_passages_are_not_evidence_when_prose_exists(self):
         # "Qdrant" appears in a bullet, the role's tools list and the skills list;
         # only the bullet should count.
-        passages = placed(bm.collect_passages(CV), {})
+        passages = placed(collect(), {})
         hits = {label["term"]: label for label in bm.skill_labels(CV, passages)}["Qdrant"]["passages"]
         assert [passages[i]["kind"] for i in hits] == ["point"]
 
@@ -157,7 +141,7 @@ class TestSkillLabels:
                 }
             ],
         }
-        passages = placed(bm.collect_passages(cv), {})
+        passages = placed(collect(cv), {})
         hits = bm.skill_labels(cv, passages)[0]["passages"]
         # Falls back to the role's points because "Dockerfile" is not "Docker".
         assert hits == [p["id"] for p in passages if p["kind"] == "point"]

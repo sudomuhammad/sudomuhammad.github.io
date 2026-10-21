@@ -21,6 +21,7 @@ QUESTIONS = [
     "Has he shipped RAG to production?",
     "What agent frameworks does he use?",
     "Is he open to relocation?",
+    "When can he start?",
     "Can he deploy on AWS?",
     "prompt caching",
     "favourite pizza topping",

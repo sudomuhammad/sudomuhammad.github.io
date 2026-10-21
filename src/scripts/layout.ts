@@ -1,5 +1,5 @@
 // The two page layouts, decided in one place for the scripts. CSS uses the same
-// query literally (Step.astro, cards/ClusterCard.astro); keep them in step.
+// query literally (Step.astro, Pointables.astro, cards/SectionCard.astro); keep them in step.
 //
 // stacked: phones held upright. The map takes the top of the screen and the
 //          active card sits below it.

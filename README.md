@@ -11,10 +11,11 @@ npm run build    # static output in dist/
 ```
 
 Content lives in `src/data/cv.json`. The map is real: `ml/build_map.py` embeds each CV passage with
-MiniLM, lays them out with UMAP and clusters them with HDBSCAN. Its output, `src/data/map.json`, is committed.
+MiniLM and lays them out with UMAP, so similar work sits together. Colours are themes I tag each item with in
+`cv.json` (defined in `src/data/themes.json`). Its output, `src/data/map.json`, is committed.
 
 ```sh
-npm run map        # after editing cv.json or clusters.json (needs uv)
+npm run map        # after editing cv.json or themes.json (needs uv)
 npm run test:ml    # Python tests and lint
 ```
 Pushing to `main` deploys to GitHub Pages via `.github/workflows/deploy.yml`.

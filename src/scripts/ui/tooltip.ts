@@ -1,5 +1,5 @@
 // The hover tooltip for points on the map.
-import { clusterOf, orgOf } from '../../data/map';
+import { orgOf, themeOf } from '../../data/map';
 import type { Anchor } from '../map/stage';
 import { html } from './html';
 
@@ -27,8 +27,8 @@ export class Tooltip {
       const { passage } = anchor;
       return html`<span class="tip-source">${orgOf(passage.source)}</span><strong>${passage.title}</strong><br />${passage.text}`;
     }
-    const { term, cluster, passages } = anchor.label;
+    const { term, theme, passages } = anchor.label;
     const n = passages.length;
-    return html`<span class="tip-source">${clusterOf(cluster).name}</span><strong>${term}</strong> · ${n} ${n === 1 ? 'passage' : 'passages'}`;
+    return html`<span class="tip-source">${themeOf(theme).name}</span><strong>${term}</strong> · ${n} ${n === 1 ? 'passage' : 'passages'}`;
   }
 }

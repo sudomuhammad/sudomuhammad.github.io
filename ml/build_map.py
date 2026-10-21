@@ -9,13 +9,12 @@ Pipeline:
     CV passages
       -> MiniLM sentence embeddings (the same quantised ONNX file the browser
          loads, so visitors' query vectors line up with these)
-      -> UMAP to 5D -> HDBSCAN clusters
       -> UMAP to 2D for the drawn layout
-      -> c-TF-IDF terms per cluster, used to suggest names
 
-Cluster names are human-approved in src/data/clusters.json and matched to the
-discovered clusters by their top terms, so a rebuild that renumbers clusters
-keeps its names. The output is committed; CI only runs --check.
+Positions come from the embeddings; colours don't. Each CV item is tagged by hand
+with a theme from src/data/themes.json, because clustering ~40 short passages
+grouped them by shared words rather than by the work. Only tagged passages are
+drawn. The output is committed; CI only runs --check.
 """
 
 from __future__ import annotations
@@ -38,7 +37,7 @@ if TYPE_CHECKING:
 
 ROOT = Path(__file__).resolve().parent.parent
 CV_PATH = ROOT / "src/data/cv.json"
-NAMES_PATH = ROOT / "src/data/clusters.json"
+THEMES_PATH = ROOT / "src/data/themes.json"
 OUT_PATH = ROOT / "src/data/map.json"
 
 # The browser loads exactly this file via Transformers.js; keep both in sync.
@@ -55,17 +54,10 @@ class Tuning:
 
     seed: int = 42
     # Neighbourhood size for UMAP. Below ~10 the corpus splits into two halves;
-    # above it, small clusters (e.g. databases) merge into their neighbours.
+    # above it, small groups (e.g. databases) merge into their neighbours.
     n_neighbors: int = 10
-    cluster_dims: int = 5
-    # Smallest group HDBSCAN may call a cluster; a role's 4-5 passages can form one.
-    min_cluster_size: int = 4
-    min_samples: int = 2
     layout_min_dist: float = 0.4
     layout_spread: float = 1.2
-    top_terms: int = 6
-    # Top terms a discovered cluster must share with an approved name to inherit it.
-    min_name_overlap: int = 2
     # Radius step (map units) for fanning out skills that land on the same point.
     coincident_spread: float = 0.018
 
@@ -73,8 +65,6 @@ class Tuning:
 TUNING = Tuning()
 
 PassageKind = Literal["context", "point", "tools", "skills", "education", "fact"]
-# Kinds that are searchable but not part of the map: they describe the person, not work.
-OFF_MAP_KINDS: frozenset[str] = frozenset({"fact"})
 # Kinds that are comma-separated lists; they'd "mention" every term they list.
 LIST_KINDS: frozenset[str] = frozenset({"tools", "skills"})
 
@@ -85,23 +75,17 @@ class Passage(TypedDict, total=False):
     title: str  # short name drawn on the map; not embedded
     text: str
     source: str
+    theme: int | None  # index into the themes; None for passages that aren't drawn (facts, the BSc)
     x: float | None
     y: float | None
-    cluster: int | None
-    outlier: bool
     tokens: int  # MiniLM WordPiece tokens in `text`
 
 
-class NamedCluster(TypedDict):
-    key: str  # stable slug for URLs (#agents) and styling; survives renaming and re-clustering
+class Theme(TypedDict):
+    key: str  # what cv.json tags items with
     name: str
     summary: str
     color: str
-    terms: list[str]
-
-
-# Shown for a discovered cluster until it's given an approved name.
-PLACEHOLDER_COLOR = "#9AA1AB"
 
 
 # ---------------------------------------------------------------- inputs
@@ -117,21 +101,39 @@ def source_hash(*paths: Path) -> str:
 
 
 def input_paths() -> tuple[Path, ...]:
-    return (CV_PATH, NAMES_PATH, Path(__file__))
+    return (CV_PATH, THEMES_PATH, Path(__file__))
 
 
-def collect_passages(cv: dict[str, Any]) -> list[Passage]:
+def collect_passages(cv: dict[str, Any], themes: list[Theme]) -> list[Passage]:
     """Flatten the CV into short, self-contained passages to embed.
 
     Only `text` is embedded; `title` is the short name drawn on the map. Bullet
     points carry hand-written titles; other kinds get one derived from the CV.
+    A role's points take the role's theme unless they name their own.
     """
+    index = {t["key"]: i for i, t in enumerate(themes)}
+
+    def theme_of(item: dict[str, Any], default: str | None = None) -> int | None:
+        key = item.get("theme", default)
+        if key is not None and key not in index:
+            raise ValueError(f"cv.json: unknown theme {key!r}; themes.json has {', '.join(index)}")
+        return None if key is None else index[key]
+
     passages: list[Passage] = []
     for role in cv["roles"]:
         source = f"{role['title']}, {role['org']}"
-        passages.append({"kind": "context", "title": role["org"], "text": role["context"], "source": source})
+        theme = theme_of(role)
+        passages.append(
+            {"kind": "context", "title": role["org"], "text": role["context"], "source": source, "theme": theme}
+        )
         passages.extend(
-            {"kind": "point", "title": point["title"], "text": point["text"], "source": source}
+            {
+                "kind": "point",
+                "title": point["title"],
+                "text": point["text"],
+                "source": source,
+                "theme": theme_of(point, role.get("theme")),
+            }
             for point in role["points"]
         )
         tools = ", ".join(role["tech"])
@@ -141,33 +143,33 @@ def collect_passages(cv: dict[str, Any]) -> list[Passage]:
                 "title": f"{role['org']} toolkit",
                 "text": f"Tools used as {role['title']} at {role['org']}: {tools}.",
                 "source": source,
+                "theme": theme,
             }
         )
     for edu in cv["education"]:
         text = f"{edu['degree']}, {edu['org']}."
         if edu.get("note"):
             text += f" {edu['note']}"
-        passages.append({"kind": "education", "title": edu["degree"], "text": text, "source": edu["degree"]})
+        passages.append(
+            {"kind": "education", "title": edu["degree"], "text": text, "source": edu["degree"], "theme": theme_of(edu)}
+        )
     for skill in cv.get("skills", []):
+        theme = theme_of(skill)
+        name = themes[theme]["name"]
         items = ", ".join(skill["items"])
         passages.append(
-            {
-                "kind": "skills",
-                "title": skill["group"],
-                "text": f"{skill['group']}: {items}.",
-                "source": f"Skills: {skill['group']}",
-            }
+            {"kind": "skills", "title": name, "text": f"{name}: {items}.", "source": f"Skills: {name}", "theme": theme}
         )
-    passages.extend({"kind": "fact", "title": "About", "text": fact, "source": "About"} for fact in cv["facts"])
+    passages.extend(
+        {"kind": "fact", "title": "About", "text": fact, "source": "About", "theme": None} for fact in cv["facts"]
+    )
     for i, passage in enumerate(passages):
         passage["id"] = i
     return passages
 
 
-def load_approved_names(path: Path) -> list[NamedCluster]:
-    if not path.exists():
-        return []
-    return json.loads(path.read_text())["clusters"]
+def load_themes(path: Path) -> list[Theme]:
+    return json.loads(path.read_text())["themes"]
 
 
 # ---------------------------------------------------------------- ML steps
@@ -244,36 +246,6 @@ def reduce(vectors: NDArray[np.float32], dims: int, min_dist: float, spread: flo
     ).fit_transform(vectors)
 
 
-def cluster(vectors: NDArray[np.float32]) -> tuple[NDArray[np.int_], NDArray[np.bool_]]:
-    """HDBSCAN clusters, with noise points attached to their most similar cluster.
-
-    Returns (labels, is_core); is_core is False for points HDBSCAN called noise.
-    """
-    from sklearn.cluster import HDBSCAN
-
-    reduced = reduce(vectors, dims=TUNING.cluster_dims, min_dist=0.0)
-    labels = HDBSCAN(min_cluster_size=TUNING.min_cluster_size, min_samples=TUNING.min_samples).fit_predict(reduced)
-    is_core = labels >= 0
-    if not is_core.any():
-        raise RuntimeError("HDBSCAN found no clusters; lower min_cluster_size in Tuning.")
-    return attach_noise(vectors, labels, is_core), is_core
-
-
-def attach_noise(
-    vectors: NDArray[np.float32], labels: NDArray[np.int_], is_core: NDArray[np.bool_]
-) -> NDArray[np.int_]:
-    """Give each noise point the label of the cluster whose centroid is most cosine-similar."""
-    import numpy as np
-
-    ids = np.unique(labels[is_core])
-    centroids = normalise_rows(np.stack([vectors[labels == c].mean(axis=0) for c in ids]))
-    out = labels.copy()
-    noise = ~is_core
-    if noise.any():
-        out[noise] = ids[(vectors[noise] @ centroids.T).argmax(axis=1)]
-    return out
-
-
 def layout(vectors: NDArray[np.float32]) -> NDArray[np.float32]:
     """2D positions scaled to the unit square."""
     import numpy as np
@@ -283,61 +255,7 @@ def layout(vectors: NDArray[np.float32]) -> NDArray[np.float32]:
     return (xy - xy.min(axis=0)) / np.where(span > 0, span, 1)
 
 
-def cluster_terms(texts: list[str], labels: list[int], top_n: int) -> dict[int, list[str]]:
-    """c-TF-IDF: treat each cluster as one document and rank its most distinctive terms."""
-    from sklearn.feature_extraction.text import TfidfVectorizer
-
-    ids = sorted(set(labels))
-    docs = [" ".join(t for t, c in zip(texts, labels, strict=True) if c == cid) for cid in ids]
-    vectoriser = TfidfVectorizer(stop_words="english", ngram_range=(1, 2), sublinear_tf=True)
-    matrix = vectoriser.fit_transform(docs).toarray()
-    vocab = vectoriser.get_feature_names_out()
-    return {cid: [str(vocab[i]) for i in row.argsort()[::-1][:top_n]] for cid, row in zip(ids, matrix, strict=True)}
-
-
-# ---------------------------------------------------------------- naming and labels
-
-
-def match_names(terms: dict[int, list[str]], approved: list[NamedCluster], min_overlap: int) -> dict[int, dict]:
-    """Assign approved names to discovered clusters, best term overlap first.
-
-    Pairs are taken greedily from the highest overlap down, so the result doesn't
-    depend on cluster numbering. Unmatched clusters get a placeholder from their terms.
-    """
-    pairs = sorted(
-        (
-            (len(set(top) & set(entry["terms"])), cid, i)
-            for cid, top in terms.items()
-            for i, entry in enumerate(approved)
-        ),
-        reverse=True,
-    )
-    out: dict[int, dict] = {}
-    used: set[int] = set()
-    for overlap, cid, i in pairs:
-        if overlap < min_overlap or cid in out or i in used:
-            continue
-        entry = approved[i]
-        out[cid] = {
-            "key": entry["key"],
-            "name": entry["name"],
-            "summary": entry["summary"],
-            "color": entry["color"],
-            "approved": True,
-        }
-        used.add(i)
-    for cid, top in terms.items():
-        out.setdefault(
-            cid,
-            {
-                "key": f"cluster-{cid}",
-                "name": ", ".join(top[:3]),
-                "summary": "",
-                "color": PLACEHOLDER_COLOR,
-                "approved": False,
-            },
-        )
-    return out
+# ---------------------------------------------------------------- labels
 
 
 def skill_labels(cv: dict[str, Any], passages: list[Passage]) -> list[dict[str, Any]]:
@@ -345,13 +263,15 @@ def skill_labels(cv: dict[str, Any], passages: list[Passage]) -> list[dict[str, 
 
     Evidence, in order of preference:
       1. prose passages that name it (bullets, role context, education);
-      2. the bullet points of roles that list it as a tool;
-      3. the skills-group passage that lists it.
+      2. the bullet points of roles that list it as a tool (or the role's context,
+         for a role with no bullets);
+      3. the skills passage that lists it.
     Terms with no evidence are skipped rather than placed at a made-up position.
     """
     from collections import Counter
 
     on_map = [p for p in passages if p.get("x") is not None]
+    skill_passages = [p for p in passages if p["kind"] == "skills"]  # one per cv.json skills entry, in order
     role_terms = [t for role in cv["roles"] for t in role["tech"]]
     skill_terms = [t for skill in cv.get("skills", []) for t in skill["items"]]
     labels = []
@@ -359,11 +279,12 @@ def skill_labels(cv: dict[str, Any], passages: list[Passage]) -> list[dict[str, 
         pattern = re.compile(rf"(?<!\w){re.escape(term)}(?!\w)", re.IGNORECASE)
         hits = [p for p in on_map if p["kind"] not in LIST_KINDS and pattern.search(p["text"])]
         if not hits:
-            roles = {f"{r['title']}, {r['org']}" for r in cv["roles"] if term in r["tech"]}
-            hits = [p for p in on_map if p["kind"] == "point" and p["source"] in roles]
+            roles = [r for r in cv["roles"] if term in r["tech"]]
+            for role in roles:
+                kind = "point" if role["points"] else "context"
+                hits += [p for p in on_map if p["kind"] == kind and p["source"] == f"{role['title']}, {role['org']}"]
         if not hits:
-            groups = {f"Skills: {s['group']}" for s in cv.get("skills", []) if term in s["items"]}
-            hits = [p for p in on_map if p["kind"] == "skills" and p["source"] in groups]
+            hits = [p for p, s in zip(skill_passages, cv.get("skills", []), strict=True) if term in s["items"]]
         if not hits:
             continue
         labels.append(
@@ -371,7 +292,7 @@ def skill_labels(cv: dict[str, Any], passages: list[Passage]) -> list[dict[str, 
                 "term": term,
                 "x": round(sum(p["x"] for p in hits) / len(hits), 4),
                 "y": round(sum(p["y"] for p in hits) / len(hits), 4),
-                "cluster": Counter(p["cluster"] for p in hits).most_common(1)[0][0],
+                "theme": Counter(p["theme"] for p in hits).most_common(1)[0][0],
                 "passages": [p["id"] for p in hits],
             }
         )
@@ -420,37 +341,30 @@ def quantise(vectors: NDArray[np.float32]) -> str:
 # ---------------------------------------------------------------- build
 
 
-def build(cv: dict[str, Any], approved: list[NamedCluster]) -> dict[str, Any]:
+def build(cv: dict[str, Any], themes: list[Theme]) -> dict[str, Any]:
     import numpy as np
 
-    passages = collect_passages(cv)
+    passages = collect_passages(cv, themes)
     vectors = embed([p["text"] for p in passages])
     tokenizer = load_tokenizer()
 
-    on_map = np.array([p["kind"] not in OFF_MAP_KINDS for p in passages])
-    map_vectors = vectors[on_map]
-    labels, is_core = cluster(map_vectors)
-    xy = layout(map_vectors)
+    on_map = np.array([p["theme"] is not None for p in passages])
+    xy = layout(vectors[on_map])
 
     map_passages = [p for p, shown in zip(passages, on_map, strict=True) if shown]
-    for p, (x, y), label, core in zip(map_passages, xy, labels, is_core, strict=True):
-        p.update(x=round(float(x), 4), y=round(float(y), 4), cluster=int(label), outlier=not bool(core))
+    for p, (x, y) in zip(map_passages, xy, strict=True):
+        p.update(x=round(float(x), 4), y=round(float(y), 4))
     for p in passages:
         p.setdefault("x", None)
         p.setdefault("y", None)
-        p.setdefault("cluster", None)
-        p.setdefault("outlier", False)
         p["tokens"] = len(wordpieces(p["text"], tokenizer))  # for the page's reading meter
-
-    terms = cluster_terms([p["text"] for p in map_passages], [int(c) for c in labels], TUNING.top_terms)
-    names = match_names(terms, approved, TUNING.min_name_overlap)
 
     return {
         "generated": "by ml/build_map.py; do not edit by hand",
         "sourceHash": source_hash(*input_paths()),
         "model": {"repo": MODEL_REPO, "revision": MODEL_REVISION, "file": MODEL_FILE, "dims": int(vectors.shape[1])},
-        "clusters": [
-            {"id": cid, "size": int((labels == cid).sum()), "terms": terms[cid], **names[cid]} for cid in sorted(terms)
+        "themes": [
+            {"id": i, **theme, "size": sum(p["theme"] == i for p in map_passages)} for i, theme in enumerate(themes)
         ],
         "passages": passages,
         "labels": skill_labels(cv, passages),
@@ -473,11 +387,9 @@ def check(out_path: Path) -> int:
 
 
 def report(data: dict[str, Any], out_path: Path) -> None:
-    print(f"Wrote {out_path.relative_to(ROOT)}: {len(data['passages'])} passages, {len(data['clusters'])} clusters")
-    for c in data["clusters"]:
-        flag = "" if c["approved"] else "  (name needs approval in src/data/clusters.json)"
-        print(f"  [{c['id']}] {c['size']:>2} passages  {c['name']}{flag}")
-        print(f"       terms: {', '.join(c['terms'])}")
+    print(f"Wrote {out_path.relative_to(ROOT)}: {len(data['passages'])} passages, {len(data['labels'])} skills")
+    for t in data["themes"]:
+        print(f"  {t['size']:>2} passages  {t['name']}")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -488,7 +400,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.check:
         return check(OUT_PATH)
 
-    data = build(json.loads(CV_PATH.read_text()), load_approved_names(NAMES_PATH))
+    data = build(json.loads(CV_PATH.read_text()), load_themes(THEMES_PATH))
     OUT_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n")
     report(data, OUT_PATH)
     return 0

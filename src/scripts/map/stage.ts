@@ -1,7 +1,7 @@
 // The full-screen map that stays on stage for the whole story. Chapters drive it
 // with declarative scenes (camera, focus, highlights, labels, particle text). A scene change only moves each particle's home; the physics
 // turns it into motion.
-import type { Cluster, Label, MappedPassage } from '../../data/map';
+import type { Label, MappedPassage, Theme } from '../../data/map';
 import { createGlCloud, type GlCloud } from './gl-cloud';
 import { LabelLayer, type LabelItem } from './label-layer';
 import { ParticleSystem, type Pointer } from './particles';
@@ -22,13 +22,13 @@ export interface Camera {
 
 export type LabelMode =
   | { kind: 'overview' } // passage titles; skills too on wide screens
-  | { kind: 'focus' } // the focused clusters' titles and skills
+  | { kind: 'focus' } // the focused themes' titles and skills
   | { kind: 'terms'; terms: string[] } // just these skills
   | { kind: 'none' };
 
 export interface Scene {
   camera: Camera;
-  /** Cluster ids to light; others dim. null lights everything. */
+  /** Theme ids to light; others dim. null lights everything. */
   focus: number[] | null;
   /** Passage ids and skill terms to ring. */
   lit: number[];
@@ -59,7 +59,7 @@ export interface Insets {
 
 interface Options {
   canvas: HTMLCanvasElement;
-  clusters: Cluster[];
+  themes: Theme[];
   passages: MappedPassage[];
   labels: Label[];
   /** Screen space kept clear of the map (top bar, ask bar). */
@@ -129,11 +129,11 @@ export class MapStage {
   private running = false;
 
   constructor(private readonly options: Options) {
-    const { canvas, clusters, passages, labels } = options;
+    const { canvas, themes, passages, labels } = options;
     this.ctx = canvas.getContext('2d')!;
     this.labelLayer = new LabelLayer(this.ctx);
-    this.colors = [...clusters.map((c) => c.color), css('--noise')];
-    this.slotOf = new Map(clusters.map((c, i) => [c.id, i]));
+    this.colors = [...themes.map((t) => t.color), css('--noise')];
+    this.slotOf = new Map(themes.map((t, i) => [t.id, i]));
     this.anchorOf = new Map(passages.map((p, i) => [p.id, i]));
     this.alpha = new Float32Array(this.colors.length).fill(1);
     this.glAlpha = new Float32Array(this.colors.length);
@@ -148,15 +148,15 @@ export class MapStage {
 
     this.particles = new ParticleSystem(
       [
-        ...passages.map((p) => ({ x: p.x, y: p.y, slot: this.slotOf.get(p.cluster)! })),
-        ...labels.map((l) => ({ x: l.x, y: l.y, slot: this.slotOf.get(l.cluster)! })),
+        ...passages.map((p) => ({ x: p.x, y: p.y, slot: this.slotOf.get(p.theme)! })),
+        ...labels.map((l) => ({ x: l.x, y: l.y, slot: this.slotOf.get(l.theme)! })),
       ],
       {
         cloudSources: passages.length,
         cloudPerAnchor: Math.max(8, Math.floor((budget * (1 - NOISE_SHARE)) / passages.length)),
         spread: CLOUD_SPREAD,
         noise: Math.round(budget * NOISE_SHARE),
-        noiseSlot: clusters.length,
+        noiseSlot: themes.length,
       },
       this.random,
     );

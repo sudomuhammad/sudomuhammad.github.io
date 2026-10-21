@@ -1,12 +1,12 @@
 // Wires the page together. Each piece lives in its own module; this file only
 // connects them.
-import { clusters, labels, mappedPassages } from '../data/map';
+import { labels, mappedPassages, themes } from '../data/map';
 import { stackedLayout } from './layout';
 import { MapStage } from './map/stage';
 import { SearchService } from './search/search-service';
 import { StoryController } from './story/controller';
 import { AskBar } from './ui/ask-bar';
-import { Principles } from './ui/principles';
+import { PointableList } from './ui/pointable-list';
 import { ReadingMeter } from './ui/reading-meter';
 import { introWanted, playTokenIntro } from './ui/token-intro';
 import { Tooltip } from './ui/tooltip';
@@ -24,7 +24,7 @@ const meter = new ReadingMeter($('[data-meter]'));
 
 const stage = new MapStage({
   canvas: $<HTMLCanvasElement>('#map'),
-  clusters,
+  themes,
   passages: mappedPassages,
   labels,
   // Keep the map clear of the top bar and the ask bar. When stacked, the active card sits
@@ -52,11 +52,14 @@ const story = new StoryController(
   (step) => {
     document.documentElement.setAttribute('data-step-kind', step.kind);
     meter.show(step);
-    principles.reset();
+    lists.forEach((list) => list.reset());
   },
 );
 
-const principles = new Principles($('[data-principles]'), (index) => story.emphasise(index));
+// Only one step is active at a time, so every card's list drives the same emphasis.
+const lists = [...document.querySelectorAll<HTMLElement>('[data-pointable]')].map(
+  (root) => new PointableList(root, (index) => story.emphasise(index)),
+);
 
 const search = new SearchService((status) => ask.setStatus(status));
 const ask = new AskBar(askRoot, { stage, search, onDismiss: () => story.render() });

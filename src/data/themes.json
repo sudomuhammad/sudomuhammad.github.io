@@ -1,0 +1,35 @@
+{
+  "_comment": "The sections every CV item is tagged with in cv.json (by key): one per scroll step, one colour on the map. After any change run `npm run map`.",
+  "themes": [
+    {
+      "key": "agents",
+      "name": "AI agents and LLM frameworks",
+      "summary": "Language-model agents inside real products: tool calling, routing between models, testing, and the frameworks behind them.",
+      "color": "#FF6A4D"
+    },
+    {
+      "key": "context",
+      "name": "Context and prompt engineering",
+      "summary": "Deciding what the model sees each turn: which tools it’s offered, prompt assembly, caching, extraction and guarded data writes.",
+      "color": "#B98CFF"
+    },
+    {
+      "key": "nlp",
+      "name": "Retrieval and NLP",
+      "summary": "Retrieval-augmented generation, embeddings and vector search, and the classic NLP underneath them.",
+      "color": "#7392FF"
+    },
+    {
+      "key": "data",
+      "name": "Data science and ML",
+      "summary": "Modelling and analysis with the Python ML stack, from scrapers to deep learning.",
+      "color": "#38C290"
+    },
+    {
+      "key": "eng",
+      "name": "Engineering",
+      "summary": "APIs, databases, containers and pipelines that get models into people’s hands.",
+      "color": "#E9B032"
+    }
+  ]
+}

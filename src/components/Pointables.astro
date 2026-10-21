@@ -1,0 +1,145 @@
+---
+// A list whose items each light something on the map: pointing at one (hover, focus or
+// tap) emphasises it; see src/scripts/ui/pointable-list.ts. Used by the "How I work"
+// principles and the Experience card's roles.
+export interface Item {
+  title: string;
+  /** Always shown under the title, e.g. a role's dates. */
+  meta?: string;
+  text: string;
+  /** A second, quieter line, e.g. a theme's tools. */
+  detail?: string;
+  /** A swatch before the title, for items that have a colour on the map. */
+  color?: string;
+  /** Read out after the item, for what only the map shows. */
+  note?: string;
+}
+
+interface Props {
+  items: Item[];
+  /** Show only titles (and meta) until an item is pointed at, at every width. */
+  compact?: boolean;
+}
+const { items, compact = false } = Astro.props;
+---
+
+<ol class:list={['pointables', { compact }]} data-pointable>
+  {
+    items.map((item, i) => (
+      <li>
+        <button type="button" class="item" data-item={i} aria-pressed="false">
+          <span class="title">
+            {item.color && <span class="swatch" style={`--c:${item.color}`} aria-hidden="true" />}
+            {item.title}
+          </span>
+          {item.meta && <span class="meta">{item.meta}</span>}
+          <span class="text">{item.text}</span>
+          {item.detail && <span class="detail">{item.detail}</span>}
+          {item.note && <span class="visually-hidden">{item.note}</span>}
+        </button>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .pointables {
+    display: grid;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .item {
+    display: block;
+    min-height: var(--tap);
+    padding: 0.5rem 0.75rem;
+    margin-inline: -0.75rem;
+    width: calc(100% + 1.5rem);
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--ink-2);
+    font: inherit;
+    line-height: 1.5;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      background-color 160ms ease-out,
+      color 160ms ease-out;
+  }
+
+  .title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--ink);
+    font-weight: 650;
+  }
+
+  .swatch {
+    flex: none;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: var(--c);
+  }
+
+  .text,
+  .detail {
+    display: block;
+    font-size: var(--step--1);
+  }
+
+  .detail {
+    margin-top: 0.25rem;
+    color: var(--ink-3);
+  }
+
+  .item .meta {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 400;
+  }
+
+  .compact .text,
+  .compact .detail {
+    display: none;
+  }
+
+  .compact .item[aria-pressed='true'] .text,
+  .compact .item[aria-pressed='true'] .detail {
+    display: block;
+    margin-top: 0.25rem;
+  }
+
+  .item:hover,
+  .item[aria-pressed='true'] {
+    background: color-mix(in srgb, var(--ink) 6%, transparent);
+  }
+
+  /* While one item is selected, the others recede. */
+  .pointables:has([aria-pressed='true']) .item:not([aria-pressed='true']) {
+    color: var(--ink-3);
+  }
+
+  .pointables:has([aria-pressed='true']) .item:not([aria-pressed='true']) .title {
+    color: var(--ink-2);
+  }
+
+  /* Stacked (same query as src/scripts/layout.ts): titles only, so the map keeps the top
+     of the screen; tapping an item shows the rest. */
+  @media (max-width: 959px) and (min-height: 501px) {
+    .text,
+    .detail {
+      display: none;
+    }
+
+    .item[aria-pressed='true'] .text,
+    .item[aria-pressed='true'] .detail {
+      display: block;
+      margin-top: 0.25rem;
+    }
+  }
+</style>

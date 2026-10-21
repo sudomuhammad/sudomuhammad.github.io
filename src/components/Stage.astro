@@ -1,9 +1,9 @@
 ---
 // The fixed, full-screen map behind the story. src/scripts/map/stage.ts adds a
 // WebGL layer under #map when the browser supports it.
-import { clusters, labels, mappedPassages } from '../data/map';
+import { labels, mappedPassages, themes } from '../data/map';
 
-const description = `A map of my CV: ${mappedPassages.length} passages and ${labels.length} skills, embedded with a sentence model and grouped into ${clusters.length} clusters: ${clusters.map((c) => c.name).join(', ')}. The same information is in the text of this page.`;
+const description = `A map of my CV: ${mappedPassages.length} passages and ${labels.length} skills, placed by a sentence model so similar work sits together, and coloured by ${themes.length} themes: ${themes.map((t) => t.name).join(', ')}. The same information is in the text of this page.`;
 ---
 
 <div class="stage">

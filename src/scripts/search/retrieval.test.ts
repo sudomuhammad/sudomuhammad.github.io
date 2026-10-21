@@ -85,15 +85,16 @@ describe('hybrid search (real MiniLM query vectors)', () => {
 
   it.each([
     ['Has he shipped RAG to production?', 'RAG with Qdrant and Pinecone'],
-    ['What agent frameworks does he use?', 'Agent and LLM frameworks'],
-    ['Can he deploy on AWS?', 'Containerised deploys'],
+    ['What agent frameworks does he use?', 'Money Means toolkit'],
+    ['Can he deploy on AWS?', 'APIs and deployment'],
     ['prompt caching', 'Prompt caching'],
   ])('"%s" returns "%s" in the top 3', (question, title) => {
     expect(titlesOf(ask(question))).toContain(title);
   });
 
-  it('answers relocation from the facts', () => {
+  it('answers relocation and availability from the facts', () => {
     expect(passages[ask('Is he open to relocation?')[0].id].kind).toBe('fact');
+    expect(passages[ask('When can he start?')[0].id].text).toBe('Available to start now.');
   });
 
   it.each(['favourite pizza topping', 'Does he know Kubernetes?'])('returns nothing for "%s"', (question) => {

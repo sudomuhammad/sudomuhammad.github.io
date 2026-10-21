@@ -1,7 +1,8 @@
-// The "How I work" card: pointing at a principle lights its evidence on the map.
-// Hover and keyboard focus preview it; a click or tap pins it until clicked again.
+// A card whose items light something on the map when pointed at: the "How I work"
+// principles (their evidence) and the skill themes (their part of the map).
+// Hover and keyboard focus preview an item; a click or tap pins it until clicked again.
 
-export class Principles {
+export class PointableList {
   private readonly buttons: HTMLButtonElement[];
   private pinned: number | null = null;
 
@@ -9,7 +10,7 @@ export class Principles {
     root: HTMLElement,
     private readonly onEmphasis: (index: number | null) => void,
   ) {
-    this.buttons = [...root.querySelectorAll<HTMLButtonElement>('[data-principle]')];
+    this.buttons = [...root.querySelectorAll<HTMLButtonElement>('[data-item]')];
     this.buttons.forEach((button, i) => {
       button.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && this.preview(i));
       button.addEventListener('pointerleave', (e) => e.pointerType === 'mouse' && this.preview(null));

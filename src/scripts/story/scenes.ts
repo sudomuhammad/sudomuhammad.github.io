@@ -17,7 +17,8 @@ export interface SceneContext {
 
 type Builders = { [K in Step['kind']]: (step: Extract<Step, { kind: K }>, ctx: SceneContext) => Scene };
 
-const passagesIn = (clusterId: number) => mappedPassages.filter((p) => p.cluster === clusterId).map((p) => p.id);
+const passagesIn = (themeId: number) => mappedPassages.filter((p) => p.theme === themeId).map((p) => p.id);
+
 // The whole map beside a card. `cardShift` is half the card's share of the width, so the map is
 // centred in what's left (shift) and scaled to fit it (1 - card share).
 const shifted = (ctx: SceneContext) => ({ ...OVERVIEW.camera, zoom: 1 - 2 * ctx.cardShift, shift: ctx.cardShift });
@@ -39,20 +40,22 @@ const builders: Builders = {
 
   chapter: (_, ctx) => ({ ...OVERVIEW, camera: shifted(ctx) }),
 
-  cluster: ({ cluster, evidence }, ctx) => ({
+  // Zoom to the section's part of the map and dim the rest; its evidence is ringed and named.
+  section: ({ theme, evidence }, ctx) => ({
     ...OVERVIEW,
-    camera: ctx.stage.frame({ passages: passagesIn(cluster.id) }, ctx.cardShift),
-    focus: [cluster.id],
+    camera: ctx.stage.frame({ passages: passagesIn(theme.id) }, ctx.cardShift),
+    focus: [theme.id],
     lit: evidence.map((p) => p.id),
     labels: { kind: 'focus' },
   }),
 
-  // Zoom to the group's skills so their names have room.
-  skills: ({ terms }, ctx) => ({
+  // The whole map; pointing at a role rings its work, so moving down the list shows the
+  // work moving across the map.
+  experience: ({ roles }, ctx) => ({
     ...OVERVIEW,
-    camera: ctx.stage.frame({ terms }, ctx.cardShift),
-    litTerms: terms,
-    labels: { kind: 'terms', terms },
+    camera: shifted(ctx),
+    lit: ctx.emphasis === null ? [] : roles[ctx.emphasis].passages,
+    labels: ctx.emphasis === null ? { kind: 'overview' } : { kind: 'none' },
   }),
 
   // Stacked, the address is split after the @ so it can be set large enough to read.

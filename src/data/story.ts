@@ -2,9 +2,8 @@
 // cards from it and the browser builds each step's scene from it, so the two
 // can't drift apart.
 import { approach } from './approach';
-import { skills } from './cv';
-import { clusters, labels, mappedPassages, type Cluster, type MappedPassage } from './map';
-import { TECHNIQUES_KEY, techniques, toolsByArea, workOrder } from './work';
+import { education, roles, skills, sourceOf, type Education, type Role } from './cv';
+import { mappedPassages, passages, passagesFrom, themes, type MappedPassage, type Theme } from './map';
 
 /** A "How I work" principle with its evidence resolved to map passages. */
 export interface Principle {
@@ -13,15 +12,21 @@ export interface Principle {
   evidence: MappedPassage[];
 }
 
+/** A role on the Experience card, with the passages it lights on the map. */
+export interface RoleEntry {
+  role: Role;
+  passages: number[];
+}
+
 export type Step =
   | { kind: 'intro'; id: string }
-  | { kind: 'approach'; id: string; principles: Principle[] }
   | { kind: 'chapter'; id: string; chapter: ChapterId }
-  | { kind: 'cluster'; id: string; cluster: Cluster; evidence: MappedPassage[]; skills: string[] }
-  | { kind: 'skills'; id: string; group: string; summary: string; items: string[]; terms: string[] }
+  | { kind: 'section'; id: string; theme: Theme; evidence: MappedPassage[]; skills: string[] }
+  | { kind: 'approach'; id: string; principles: Principle[] }
+  | { kind: 'experience'; id: string; roles: RoleEntry[]; education: Education[] }
   | { kind: 'contact'; id: string };
 
-export type ChapterId = 'approach' | 'work' | 'contact';
+export type ChapterId = 'work' | 'approach' | 'experience' | 'contact';
 
 export interface Chapter {
   id: ChapterId;
@@ -31,6 +36,17 @@ export interface Chapter {
   lede: string;
   steps: Step[];
 }
+
+// ------------------------------------------------------------------ work: one step per section, in themes.json order
+// Every bullet point and the MSc appear under exactly one section, so the sections together
+// carry the whole CV's detail; the Experience card only needs titles and dates.
+const sectionSteps: Step[] = themes.map((theme) => ({
+  kind: 'section',
+  id: `work-${theme.key}`,
+  theme,
+  evidence: mappedPassages.filter((p) => p.theme === theme.id && (p.kind === 'point' || p.kind === 'education')),
+  skills: skills.find((s) => s.theme === theme.key)?.items ?? [],
+}));
 
 // ------------------------------------------------------------------ approach: one step, all principles
 const passageByTitle = new Map(mappedPassages.map((p) => [p.title, p]));
@@ -44,44 +60,23 @@ function evidenceFor(title: string): MappedPassage {
 
 const principles: Principle[] = approach.principles.map((p) => ({ ...p, evidence: p.evidence.map(evidenceFor) }));
 
-// ------------------------------------------------------------------ work: one step per area, in workOrder
-const EVIDENCE_PER_CLUSTER = 3;
-
-// Every skill in the CV appears in exactly one area's tools, so no tool shows up twice.
-(() => {
-  const listed = Object.values(toolsByArea).flat();
-  const duplicates = listed.filter((t, i) => listed.indexOf(t) !== i);
-  const missing = skills.flatMap((s) => s.items).filter((t) => !listed.includes(t));
-  if (duplicates.length) throw new Error(`work.ts: listed in more than one area: ${duplicates.join(', ')}`);
-  if (missing.length) throw new Error(`work.ts: skills not in any area: ${missing.join(', ')}`);
-})();
-
-/** Only tools that exist as labels on the map can light up. */
-const termsOnMap = (tools: string[]) =>
-  labels.filter((l) => tools.some((t) => t.toLowerCase() === l.term.toLowerCase())).map((l) => l.term);
-
-function areaStep(key: (typeof workOrder)[number]): Step {
-  const tools = toolsByArea[key];
-  if (key === TECHNIQUES_KEY) {
-    return { kind: 'skills', id: `work-${key}`, group: techniques.name, summary: techniques.summary, items: tools, terms: termsOnMap(tools) };
-  }
-  const cluster = clusters.find((c) => c.key === key);
-  if (!cluster) throw new Error(`work.ts: no cluster with key "${key}" in map.json`);
-  return {
-    kind: 'cluster',
-    id: `work-${key}`,
-    cluster,
-    evidence: mappedPassages
-      .filter((p) => p.cluster === cluster.id && (p.kind === 'point' || p.kind === 'education'))
-      .slice(0, EVIDENCE_PER_CLUSTER),
-    skills: tools,
-  };
-}
-
-const workSteps: Step[] = workOrder.map(areaStep);
+// ------------------------------------------------------------------ experience: every role and degree on one card
+const roleEntries: RoleEntry[] = roles.map((role) => ({
+  role,
+  passages: passagesFrom(sourceOf(role))
+    .filter((p) => p.x !== null && p.kind !== 'tools')
+    .map((p) => p.id),
+}));
 
 // ------------------------------------------------------------------ chapters
 export const chapters: Chapter[] = [
+  {
+    id: 'work',
+    nav: 'Work',
+    title: 'What I work on',
+    lede: 'Five areas, each lit on the map in turn. Where a point sits comes from embedding my CV; its colour is the area I filed it under.',
+    steps: [{ kind: 'chapter', id: 'work', chapter: 'work' }, ...sectionSteps],
+  },
   {
     id: 'approach',
     nav: approach.title,
@@ -90,11 +85,11 @@ export const chapters: Chapter[] = [
     steps: [{ kind: 'approach', id: 'approach', principles }],
   },
   {
-    id: 'work',
-    nav: 'Work',
-    title: 'What I work on',
-    lede: 'The areas the map found in my CV, plus the techniques that run through them.',
-    steps: [{ kind: 'chapter', id: 'work', chapter: 'work' }, ...workSteps],
+    id: 'experience',
+    nav: 'Experience',
+    title: 'Experience',
+    lede: 'Point at a role to see where its work sits on the map.',
+    steps: [{ kind: 'experience', id: 'experience', roles: roleEntries, education }],
   },
   {
     id: 'contact',
@@ -116,14 +111,16 @@ export const stepsById = new Map<string, Step>(orderedSteps.map((step) => [step.
 // A scroll story has no visible page length, so the page shows how far through it the
 // reader is, counted as the CV tokens (MiniLM WordPiece) its cards have shown so far.
 
-const sum = (ids: number[]) => mappedPassages.filter((p) => ids.includes(p.id)).reduce((n, p) => n + p.tokens, 0);
+const tokensOf = new Map(passages.map((p) => [p.id, p.tokens]));
+const sum = (ids: number[]) => [...new Set(ids)].reduce((n, id) => n + (tokensOf.get(id) ?? 0), 0);
+const contextOf = (role: Role) => passagesFrom(sourceOf(role)).filter((p) => p.kind === 'context');
 
 const TOKENS_SHOWN: { [K in Step['kind']]: (step: Extract<Step, { kind: K }>) => number } = {
   intro: () => 0,
-  approach: (step) => sum([...new Set(step.principles.flatMap((p) => p.evidence.map((e) => e.id)))]),
   chapter: () => 0,
-  cluster: (step) => sum(step.evidence.map((p) => p.id)),
-  skills: (step) => sum([...new Set(labels.filter((l) => step.terms.includes(l.term)).flatMap((l) => l.passages))]),
+  section: (step) => sum(step.evidence.map((p) => p.id)),
+  approach: (step) => sum(step.principles.flatMap((p) => p.evidence.map((e) => e.id))),
+  experience: (step) => sum(step.roles.flatMap(({ role }) => contextOf(role).map((p) => p.id))),
   contact: () => 0,
 };
 
