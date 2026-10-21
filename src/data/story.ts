@@ -25,6 +25,7 @@ export type Step =
   | { kind: 'section'; id: string; theme: Theme; evidence: MappedPassage[]; skills: string[] }
   | { kind: 'approach'; id: string; principles: Principle[] }
   | { kind: 'experience'; id: string; roles: RoleEntry[]; education: Education[] }
+  | { kind: 'method'; id: string }
   | { kind: 'contact'; id: string };
 
 export type ChapterId = keyof typeof chapterCopy;
@@ -78,6 +79,7 @@ export const chapters: Chapter[] = [
     ...chapterCopy.experience,
     steps: [{ kind: 'experience', id: 'experience', roles: roleEntries, education }],
   },
+  { id: 'method', ...chapterCopy.method, steps: [{ kind: 'method', id: 'method' }] },
   { id: 'contact', ...chapterCopy.contact, steps: [{ kind: 'contact', id: 'contact' }] },
 ];
 
@@ -102,6 +104,7 @@ const TOKENS_SHOWN: { [K in Step['kind']]: (step: Extract<Step, { kind: K }>) =>
   section: (step) => sum(step.evidence.map((p) => p.id)),
   approach: (step) => sum(step.principles.flatMap((p) => p.evidence.map((e) => e.id))),
   experience: (step) => sum(step.roles.flatMap(({ role }) => contextOf(role).map((p) => p.id))),
+  method: () => 0,
   contact: () => 0,
 };
 

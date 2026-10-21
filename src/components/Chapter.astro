@@ -6,6 +6,7 @@ import Step from './Step.astro';
 import ApproachCard from './cards/ApproachCard.astro';
 import ContactCard from './cards/ContactCard.astro';
 import ExperienceCard from './cards/ExperienceCard.astro';
+import MethodCard from './cards/MethodCard.astro';
 import SectionCard from './cards/SectionCard.astro';
 
 interface Props {
@@ -32,6 +33,7 @@ const headingId = `${chapter.id}-title`;
         {step.kind === 'experience' && (
           <ExperienceCard headingId={headingId} title={chapter.title} lede={chapter.lede} roles={step.roles} education={step.education} />
         )}
+        {step.kind === 'method' && <MethodCard headingId={headingId} title={chapter.title} />}
         {step.kind === 'contact' && <ContactCard headingId={headingId} title={chapter.title} lede={chapter.lede} />}
       </Step>
     ))

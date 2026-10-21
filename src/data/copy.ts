@@ -28,11 +28,35 @@ export const chapterCopy = {
     title: 'Experience',
     lede: 'Point at a role to see where its work sits on the map.',
   },
+  method: { nav: 'How it’s made', title: 'How this map is made', lede: '' },
   contact: {
     nav: 'Contact',
     title: 'Let’s talk',
     lede: 'Hiring for an AI engineer? Email is quickest.',
   },
+};
+
+/** The "How this map is made" card. Counts come from map.json; the evaluation figures from ml/eval/results.md. */
+export const method = {
+  steps: ({ passages, dims }: { passages: number; dims: number }) => [
+    {
+      title: 'Embedded',
+      text: `${passages} passages from my CV, each turned into a list of ${dims} numbers by a small sentence model (MiniLM) that also runs in your browser.`,
+    },
+    {
+      title: 'Laid out',
+      text: 'UMAP places similar work close together. Where a point sits is computed; its colour is the section I filed it under, because clustering grouped short sentences by shared words rather than by the work.',
+    },
+    {
+      title: 'Searched',
+      text: 'Ask combines keyword search with the same model, on your device. A question my CV can’t answer gets no answer, not the nearest wrong one.',
+    },
+    {
+      title: 'Measured',
+      text: 'I tested five small models on 62 recruiter-style questions. Newer ones found more answers but also “answered” things my CV doesn’t say, like Kubernetes, so I kept this one.',
+    },
+  ],
+  source: { label: 'Read the code and the evaluation', href: 'https://github.com/sudomuhammad/sudomuhammad.github.io' },
 };
 
 export const notFound = {

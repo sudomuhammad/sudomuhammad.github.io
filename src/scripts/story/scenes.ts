@@ -58,6 +58,9 @@ const builders: Builders = {
     labels: ctx.emphasis === null ? { kind: 'overview' } : { kind: 'none' },
   }),
 
+  // The whole map, labelled: the thing the card describes.
+  method: (_, ctx) => ({ ...OVERVIEW, camera: shifted(ctx) }),
+
   // Stacked, the address is split after the @ so it can be set large enough to read.
   contact: (_, ctx) => ({
     ...OVERVIEW,

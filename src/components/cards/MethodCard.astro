@@ -1,0 +1,52 @@
+---
+// How the map on this page is made, in four plain steps, with a link to the code.
+import { method } from '../../data/copy';
+import { model, passages } from '../../data/map';
+import Card from '../Card.astro';
+
+interface Props {
+  headingId: string;
+  title: string;
+}
+const { headingId, title } = Astro.props;
+const steps = method.steps({ passages: passages.length, dims: model.dims });
+---
+
+<Card labelledby={headingId}>
+  <h2 id={headingId}>{title}</h2>
+  <ul class="steps">
+    {
+      steps.map((s) => (
+        <li>
+          <span class="name">{s.title}</span>
+          <span class="text">{s.text}</span>
+        </li>
+      ))
+    }
+  </ul>
+  <p class="source">
+    <a class="button" href={method.source.href} rel="noopener">{method.source.label}</a>
+  </p>
+</Card>
+
+<style>
+  .steps li {
+    line-height: 1.45;
+  }
+
+  .name {
+    display: block;
+    color: var(--ink);
+    font-weight: 650;
+  }
+
+  .text {
+    display: block;
+    color: var(--ink-2);
+    font-size: var(--step--1);
+  }
+
+  .source {
+    margin-top: 1.2rem;
+  }
+</style>
