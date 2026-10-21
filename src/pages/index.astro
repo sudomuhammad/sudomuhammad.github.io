@@ -6,21 +6,11 @@ import ReadingMeter from '../components/ReadingMeter.astro';
 import Stage from '../components/Stage.astro';
 import Topbar from '../components/Topbar.astro';
 import Base from '../layouts/Base.astro';
-import { person } from '../data/cv';
+import { askSuggestions, meta } from '../data/copy';
 import { chapters } from '../data/story';
-
-const suggestions = [
-  'Have you shipped RAG to production?',
-  'Which agent frameworks do you use?',
-  'Can you deploy on AWS?',
-  'When can you start?',
-];
 ---
 
-<Base
-  title={`${person.name}, AI Engineer`}
-  description="Muhammad Uzair builds language-model agents for real products. Five years in data science and machine learning, most recently AI Engineer on Aida at Money Means. Available now."
->
+<Base title={meta.title} description={meta.description}>
   <Stage />
   <Topbar />
   <main class="story">
@@ -28,7 +18,7 @@ const suggestions = [
     {chapters.map((chapter) => <Chapter chapter={chapter} />)}
   </main>
   <ReadingMeter />
-  <AskBar suggestions={suggestions} />
+  <AskBar suggestions={askSuggestions} />
 </Base>
 
 <script>

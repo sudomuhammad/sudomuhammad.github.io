@@ -2,6 +2,7 @@
 // cards from it and the browser builds each step's scene from it, so the two
 // can't drift apart.
 import { approach } from './approach';
+import { chapterCopy } from './copy';
 import { education, roles, skills, sourceOf, type Education, type Role } from './cv';
 import { mappedPassages, passages, passagesFrom, themes, type MappedPassage, type Theme } from './map';
 
@@ -26,7 +27,7 @@ export type Step =
   | { kind: 'experience'; id: string; roles: RoleEntry[]; education: Education[] }
   | { kind: 'contact'; id: string };
 
-export type ChapterId = 'work' | 'approach' | 'experience' | 'contact';
+export type ChapterId = keyof typeof chapterCopy;
 
 export interface Chapter {
   id: ChapterId;
@@ -70,34 +71,14 @@ const roleEntries: RoleEntry[] = roles.map((role) => ({
 
 // ------------------------------------------------------------------ chapters
 export const chapters: Chapter[] = [
-  {
-    id: 'work',
-    nav: 'Work',
-    title: 'What I work on',
-    lede: 'Five areas, each lit on the map in turn. Where a point sits comes from embedding my CV; its colour is the area I filed it under.',
-    steps: [{ kind: 'chapter', id: 'work', chapter: 'work' }, ...sectionSteps],
-  },
-  {
-    id: 'approach',
-    nav: approach.title,
-    title: approach.title,
-    lede: '',
-    steps: [{ kind: 'approach', id: 'approach', principles }],
-  },
+  { id: 'work', ...chapterCopy.work, steps: [{ kind: 'chapter', id: 'work', chapter: 'work' }, ...sectionSteps] },
+  { id: 'approach', ...chapterCopy.approach, steps: [{ kind: 'approach', id: 'approach', principles }] },
   {
     id: 'experience',
-    nav: 'Experience',
-    title: 'Experience',
-    lede: 'Point at a role to see where its work sits on the map.',
+    ...chapterCopy.experience,
     steps: [{ kind: 'experience', id: 'experience', roles: roleEntries, education }],
   },
-  {
-    id: 'contact',
-    nav: 'Contact',
-    title: 'Let’s talk',
-    lede: 'Hiring for an AI engineer? Email is quickest.',
-    steps: [{ kind: 'contact', id: 'contact' }],
-  },
+  { id: 'contact', ...chapterCopy.contact, steps: [{ kind: 'contact', id: 'contact' }] },
 ];
 
 export const introStep: Step = { kind: 'intro', id: 'top' };

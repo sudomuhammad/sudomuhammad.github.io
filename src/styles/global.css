@@ -13,10 +13,9 @@
   --grid: #22262c;
   --noise: #4b515b;
 
-  --agents: #ff6a4d;
-  --retrieval: #7392ff;
-  --data: #38c290;
-  --shipping: #e9b032;
+  /* Interface accents. Section colours are data (src/data/themes.json), not tokens. */
+  --accent: #7392ff; /* focus ring, selection, form accents */
+  --accent-warm: #ff6a4d; /* caret, the email address's underline */
 
   --sans: 'Bricolage Grotesque Variable', 'Helvetica Neue', Arial, sans-serif;
   --mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
@@ -29,8 +28,8 @@
   --step-3: clamp(2.4rem, 1.7rem + 3.2vw, 4.75rem);
 
   color-scheme: dark;
-  accent-color: var(--retrieval);
-  caret-color: var(--agents);
+  accent-color: var(--accent);
+  caret-color: var(--accent-warm);
   scrollbar-color: #3a3f48 var(--ground);
 }
 
@@ -64,12 +63,12 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--retrieval) 45%, var(--ground));
+  background: color-mix(in srgb, var(--accent) 45%, var(--ground));
   color: #ffffff;
 }
 
 :focus-visible {
-  outline: 2px solid var(--retrieval);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
   border-radius: 3px;
 }
