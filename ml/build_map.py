@@ -13,8 +13,9 @@ Pipeline:
 
 Positions come from the embeddings; colours don't. Each CV item is tagged by hand
 with a theme from src/data/themes.json, because clustering ~40 short passages
-grouped them by shared words rather than by the work. Only tagged passages are
-drawn. The output is committed; CI only runs --check.
+grouped them by shared words rather than by the work. Tagged prose is drawn; lists
+(tools, skills) and facts are searchable only. The output is committed; CI only
+runs --check.
 """
 
 from __future__ import annotations
@@ -65,8 +66,14 @@ class Tuning:
 TUNING = Tuning()
 
 PassageKind = Literal["context", "point", "tools", "skills", "education", "fact"]
-# Kinds that are comma-separated lists; they'd "mention" every term they list.
+# Kinds that are comma-separated lists. They're searchable but never drawn: a list of
+# names would pull the layout towards shared tools rather than shared work.
 LIST_KINDS: frozenset[str] = frozenset({"tools", "skills"})
+
+
+def is_drawn(passage: Passage) -> bool:
+    """Whether a passage gets a place on the map: tagged with a theme, and prose rather than a list."""
+    return passage["theme"] is not None and passage["kind"] not in LIST_KINDS
 
 
 class Passage(TypedDict, total=False):
@@ -75,7 +82,7 @@ class Passage(TypedDict, total=False):
     title: str  # short name drawn on the map; not embedded
     text: str
     source: str
-    theme: int | None  # index into the themes; None for passages that aren't drawn (facts, the BSc)
+    theme: int | None  # index into the themes; None for untagged passages (facts, the BSc)
     x: float | None
     y: float | None
     tokens: int  # MiniLM WordPiece tokens in `text`
@@ -137,14 +144,13 @@ def collect_passages(cv: dict[str, Any], themes: list[Theme]) -> list[Passage]:
             for point in role["points"]
         )
         tools = ", ".join(role["tech"])
-        # Searchable but not drawn: a list of names would pull the layout towards shared tools.
         passages.append(
             {
                 "kind": "tools",
                 "title": f"{role['org']} toolkit",
                 "text": f"Tools used as {role['title']} at {role['org']}: {tools}.",
                 "source": source,
-                "theme": None,
+                "theme": theme,
             }
         )
     for edu in cv["education"]:
@@ -260,17 +266,17 @@ def layout(vectors: NDArray[np.float32]) -> NDArray[np.float32]:
 
 
 def skill_labels(cv: dict[str, Any], passages: list[Passage]) -> list[dict[str, Any]]:
-    """Place each skill from cv.json's skills lists at the centre of the passages that are evidence for it.
+    """Place each skill from cv.json's skills lists among the evidence for it in its own theme.
 
-    Only the curated skills are labelled (a role's full tech list stays in the CV), and each
-    takes the theme of the list it's in, not the theme most of its evidence happens to have.
+    Only the curated skills are labelled (a role's full tech list stays in the CV). A skill
+    takes the theme of the list it's in, and only that theme's drawn passages count as
+    evidence, so when the page zooms to a theme every one of its skills is in frame.
 
     Evidence, in order of preference:
-      1. prose passages that name it (bullets, role context, education);
-      2. the bullet points of roles that list it as a tool (or the role's context,
-         for a role with no bullets);
-      3. the skills passage that lists it.
-    Terms with no evidence are skipped rather than placed at a made-up position.
+      1. passages in the theme that name it (bullets, role context, education);
+      2. the theme's bullet points from roles that list it as a tool (or the role's
+         context, for a role with no bullets).
+    A skill with neither sits at the centre of its theme, with no evidence passages.
     """
     on_map = [p for p in passages if p.get("x") is not None]
     skill_passages = [p for p in passages if p["kind"] == "skills"]  # one per cv.json skills entry, in order
@@ -278,22 +284,22 @@ def skill_labels(cv: dict[str, Any], passages: list[Passage]) -> list[dict[str, 
     theme_of = {term: p["theme"] for p, skill in zip(skill_passages, skills, strict=True) for term in skill["items"]}
     labels = []
     for term, theme in theme_of.items():
+        mine = [p for p in on_map if p["theme"] == theme]
+        if not mine:
+            continue  # nothing drawn in this theme, so nowhere honest to put it
         pattern = re.compile(rf"(?<!\w){re.escape(term)}(?!\w)", re.IGNORECASE)
-        hits = [p for p in on_map if p["kind"] not in LIST_KINDS and pattern.search(p["text"])]
+        hits = [p for p in mine if pattern.search(p["text"])]
         if not hits:
-            roles = [r for r in cv["roles"] if term in r["tech"]]
-            for role in roles:
-                kind = "point" if role["points"] else "context"
-                hits += [p for p in on_map if p["kind"] == kind and p["source"] == f"{role['title']}, {role['org']}"]
-        if not hits:
-            hits = [p for p, s in zip(skill_passages, skills, strict=True) if term in s["items"]]
-        if not hits:
-            continue
+            for role in cv["roles"]:
+                if term in role["tech"]:
+                    kind = "point" if role["points"] else "context"
+                    hits += [p for p in mine if p["kind"] == kind and p["source"] == f"{role['title']}, {role['org']}"]
+        placed_by = hits or mine
         labels.append(
             {
                 "term": term,
-                "x": round(sum(p["x"] for p in hits) / len(hits), 4),
-                "y": round(sum(p["y"] for p in hits) / len(hits), 4),
+                "x": round(sum(p["x"] for p in placed_by) / len(placed_by), 4),
+                "y": round(sum(p["y"] for p in placed_by) / len(placed_by), 4),
                 "theme": theme,
                 "passages": [p["id"] for p in hits],
             }
@@ -350,7 +356,7 @@ def build(cv: dict[str, Any], themes: list[Theme]) -> dict[str, Any]:
     vectors = embed([p["text"] for p in passages])
     tokenizer = load_tokenizer()
 
-    on_map = np.array([p["theme"] is not None for p in passages])
+    on_map = np.array([is_drawn(p) for p in passages])
     xy = layout(vectors[on_map])
 
     map_passages = [p for p, shown in zip(passages, on_map, strict=True) if shown]

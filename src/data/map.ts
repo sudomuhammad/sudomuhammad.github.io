@@ -12,7 +12,7 @@ export interface Passage {
   title: string;
   text: string;
   source: string;
-  /** Index into `themes`; null (with x and y) for passages that are searchable but not drawn (e.g. facts). */
+  /** Index into `themes`; null for untagged passages (facts, the BSc). x and y are null for anything not drawn, lists included. */
   theme: number | null;
   x: number | null;
   y: number | null;

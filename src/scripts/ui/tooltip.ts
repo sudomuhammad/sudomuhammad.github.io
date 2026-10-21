@@ -29,6 +29,8 @@ export class Tooltip {
     }
     const { term, theme, passages } = anchor.label;
     const n = passages.length;
-    return html`<span class="tip-source">${themeOf(theme).name}</span><strong>${term}</strong> · ${n} ${n === 1 ? 'passage' : 'passages'}`;
+    // A skill no passage names sits at the centre of its section; say so rather than "0 passages".
+    const evidence = n === 0 ? 'listed skill' : `${n} ${n === 1 ? 'passage' : 'passages'}`;
+    return html`<span class="tip-source">${themeOf(theme).name}</span><strong>${term}</strong> · ${evidence}`;
   }
 }

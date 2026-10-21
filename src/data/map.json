@@ -1,6 +1,6 @@
 {
  "generated": "by ml/build_map.py; do not edit by hand",
- "sourceHash": "81f4cdc28f051017",
+ "sourceHash": "80903cbe092e7734",
  "model": {
   "repo": "Xenova/all-MiniLM-L6-v2",
   "revision": "751bff37182d3f1213fa05d7196b954e230abad9",
@@ -14,7 +14,7 @@
    "name": "AI agents and LLM frameworks",
    "summary": "Language-model agents inside real products: tool calling, routing between models, testing, and the frameworks behind them.",
    "color": "#FF6A4D",
-   "size": 9
+   "size": 8
   },
   {
    "id": 1,
@@ -22,7 +22,7 @@
    "name": "Context and prompt engineering",
    "summary": "Deciding what the model sees each turn: which tools it’s offered, prompt assembly, caching, extraction and guarded data writes.",
    "color": "#B98CFF",
-   "size": 7
+   "size": 6
   },
   {
    "id": 2,
@@ -30,7 +30,7 @@
    "name": "Retrieval and NLP",
    "summary": "Retrieval-augmented generation, embeddings and vector search, and the classic NLP underneath them.",
    "color": "#7392FF",
-   "size": 4
+   "size": 3
   },
   {
    "id": 3,
@@ -38,7 +38,7 @@
    "name": "Data science and ML",
    "summary": "Modelling and analysis with the Python ML stack, from scrapers to deep learning.",
    "color": "#38C290",
-   "size": 6
+   "size": 5
   },
   {
    "id": 4,
@@ -46,7 +46,7 @@
    "name": "Engineering",
    "summary": "APIs, databases, containers and pipelines that get models into people’s hands.",
    "color": "#E9B032",
-   "size": 4
+   "size": 3
   }
  ],
  "passages": [
@@ -57,8 +57,8 @@
    "source": "AI Engineer, Money Means",
    "theme": 0,
    "id": 0,
-   "x": 0.5288,
-   "y": 0.5118,
+   "x": 0.5445,
+   "y": 0.3856,
    "tokens": 41
   },
   {
@@ -68,8 +68,8 @@
    "source": "AI Engineer, Money Means",
    "theme": 0,
    "id": 1,
-   "x": 0.3681,
-   "y": 0.4193,
+   "x": 0.6285,
+   "y": 0.7287,
    "tokens": 30
   },
   {
@@ -79,8 +79,8 @@
    "source": "AI Engineer, Money Means",
    "theme": 1,
    "id": 2,
-   "x": 0.1376,
-   "y": 0.1517,
+   "x": 0.1192,
+   "y": 1.0,
    "tokens": 24
   },
   {
@@ -90,8 +90,8 @@
    "source": "AI Engineer, Money Means",
    "theme": 0,
    "id": 3,
-   "x": 0.1188,
-   "y": 0.52,
+   "x": 0.3434,
+   "y": 0.6863,
    "tokens": 38
   },
   {
@@ -101,8 +101,8 @@
    "source": "AI Engineer, Money Means",
    "theme": 0,
    "id": 4,
-   "x": 0.1534,
-   "y": 0.6686,
+   "x": 0.3256,
+   "y": 0.4742,
    "tokens": 35
   },
   {
@@ -112,8 +112,8 @@
    "source": "AI Engineer, Money Means",
    "theme": 1,
    "id": 5,
-   "x": 0.0143,
-   "y": 0.1328,
+   "x": 0.2409,
+   "y": 0.863,
    "tokens": 24
   },
   {
@@ -123,8 +123,8 @@
    "source": "AI Engineer, Money Means",
    "theme": 1,
    "id": 6,
-   "x": 0.0,
-   "y": 0.2846,
+   "x": 0.1276,
+   "y": 0.7494,
    "tokens": 21
   },
   {
@@ -134,8 +134,8 @@
    "source": "AI Engineer, Money Means",
    "theme": 1,
    "id": 7,
-   "x": 0.3525,
-   "y": 0.1252,
+   "x": 0.3408,
+   "y": 0.9977,
    "tokens": 23
   },
   {
@@ -145,8 +145,8 @@
    "source": "AI Engineer, Money Means",
    "theme": 1,
    "id": 8,
-   "x": 0.3213,
-   "y": 0.2775,
+   "x": 0.4893,
+   "y": 0.8746,
    "tokens": 41
   },
   {
@@ -156,8 +156,8 @@
    "source": "AI Engineer, Money Means",
    "theme": 0,
    "id": 9,
-   "x": 0.2724,
-   "y": 0.5444,
+   "x": 0.483,
+   "y": 0.6254,
    "tokens": 30
   },
   {
@@ -167,8 +167,8 @@
    "source": "AI Engineer, Money Means",
    "theme": 1,
    "id": 10,
-   "x": 0.2245,
-   "y": 0.0,
+   "x": 0.0,
+   "y": 0.8068,
    "tokens": 18
   },
   {
@@ -176,7 +176,7 @@
    "title": "Money Means toolkit",
    "text": "Tools used as AI Engineer at Money Means: C#, Python, Pydantic, CrewAI, Microsoft Agent Framework, Azure AI Search, Azure AI Foundry, Redis, OpenTelemetry.",
    "source": "AI Engineer, Money Means",
-   "theme": null,
+   "theme": 0,
    "id": 11,
    "x": null,
    "y": null,
@@ -189,8 +189,8 @@
    "source": "Full Stack Data Scientist, VUE group",
    "theme": 3,
    "id": 12,
-   "x": 0.8351,
-   "y": 0.2867,
+   "x": 0.2311,
+   "y": 0.0063,
    "tokens": 31
   },
   {
@@ -200,8 +200,8 @@
    "source": "Full Stack Data Scientist, VUE group",
    "theme": 0,
    "id": 13,
-   "x": 0.5986,
-   "y": 0.3069,
+   "x": 0.4921,
+   "y": 0.2184,
    "tokens": 31
   },
   {
@@ -211,8 +211,8 @@
    "source": "Full Stack Data Scientist, VUE group",
    "theme": 0,
    "id": 14,
-   "x": 0.4963,
-   "y": 0.6514,
+   "x": 0.6512,
+   "y": 0.4826,
    "tokens": 19
   },
   {
@@ -222,8 +222,8 @@
    "source": "Full Stack Data Scientist, VUE group",
    "theme": 3,
    "id": 15,
-   "x": 0.5657,
-   "y": 0.0755,
+   "x": 0.0876,
+   "y": 0.3397,
    "tokens": 17
   },
   {
@@ -233,8 +233,8 @@
    "source": "Full Stack Data Scientist, VUE group",
    "theme": 4,
    "id": 16,
-   "x": 0.8047,
-   "y": 0.6224,
+   "x": 0.5762,
+   "y": 0.0,
    "tokens": 22
   },
   {
@@ -242,7 +242,7 @@
    "title": "VUE group toolkit",
    "text": "Tools used as Full Stack Data Scientist at VUE group: Python, AWS, LLMs, NLP, TensorFlow, Docker, n8n, Hugging Face, LangChain, CircleCI, PostgreSQL, MongoDB.",
    "source": "Full Stack Data Scientist, VUE group",
-   "theme": null,
+   "theme": 3,
    "id": 17,
    "x": null,
    "y": null,
@@ -255,8 +255,8 @@
    "source": "Co-founder, Innervoices S.L.",
    "theme": 0,
    "id": 18,
-   "x": 0.7563,
-   "y": 0.4636,
+   "x": 0.3915,
+   "y": 0.0018,
    "tokens": 47
   },
   {
@@ -266,8 +266,8 @@
    "source": "Co-founder, Innervoices S.L.",
    "theme": 2,
    "id": 19,
-   "x": 0.4486,
-   "y": 0.8116,
+   "x": 0.8146,
+   "y": 0.5447,
    "tokens": 23
   },
   {
@@ -277,8 +277,8 @@
    "source": "Co-founder, Innervoices S.L.",
    "theme": 2,
    "id": 20,
-   "x": 0.106,
-   "y": 0.8863,
+   "x": 0.8362,
+   "y": 0.748,
    "tokens": 26
   },
   {
@@ -288,8 +288,8 @@
    "source": "Co-founder, Innervoices S.L.",
    "theme": 4,
    "id": 21,
-   "x": 1.0,
-   "y": 0.5956,
+   "x": 0.7799,
+   "y": 0.0405,
    "tokens": 38
   },
   {
@@ -297,7 +297,7 @@
    "title": "Innervoices S.L. toolkit",
    "text": "Tools used as Co-founder at Innervoices S.L.: Python, React, MongoDB, Qdrant, Pinecone, AWS, Docker, LangChain, pytest, SageMaker.",
    "source": "Co-founder, Innervoices S.L.",
-   "theme": null,
+   "theme": 0,
    "id": 22,
    "x": null,
    "y": null,
@@ -310,8 +310,8 @@
    "source": "Data Scientist, Plenty",
    "theme": 3,
    "id": 23,
-   "x": 0.7529,
-   "y": 0.823,
+   "x": 0.8777,
+   "y": 0.1841,
    "tokens": 23
   },
   {
@@ -321,8 +321,8 @@
    "source": "Data Scientist, Plenty",
    "theme": 3,
    "id": 24,
-   "x": 0.5773,
-   "y": 0.8752,
+   "x": 1.0,
+   "y": 0.2985,
    "tokens": 17
   },
   {
@@ -332,8 +332,8 @@
    "source": "Data Scientist, Plenty",
    "theme": 3,
    "id": 25,
-   "x": 0.7179,
-   "y": 0.9845,
+   "x": 0.7617,
+   "y": 0.3511,
    "tokens": 31
   },
   {
@@ -341,7 +341,7 @@
    "title": "Plenty toolkit",
    "text": "Tools used as Data Scientist at Plenty: Python, SageMaker, Google Colab, TensorFlow, Hugging Face.",
    "source": "Data Scientist, Plenty",
-   "theme": null,
+   "theme": 3,
    "id": 26,
    "x": null,
    "y": null,
@@ -354,8 +354,8 @@
    "source": "System Support Engineer, Techaccess",
    "theme": 4,
    "id": 27,
-   "x": 0.9269,
-   "y": 0.3855,
+   "x": 0.2777,
+   "y": 0.1606,
    "tokens": 33
   },
   {
@@ -363,7 +363,7 @@
    "title": "Techaccess toolkit",
    "text": "Tools used as System Support Engineer at Techaccess: Oracle RDBMS, Red Hat Linux, SQL, VMware.",
    "source": "System Support Engineer, Techaccess",
-   "theme": null,
+   "theme": 4,
    "id": 28,
    "x": null,
    "y": null,
@@ -376,8 +376,8 @@
    "source": "MSc Artificial Intelligence & Applications",
    "theme": 2,
    "id": 29,
-   "x": 0.356,
-   "y": 1.0,
+   "x": 0.973,
+   "y": 0.4843,
    "tokens": 32
   },
   {
@@ -398,8 +398,8 @@
    "source": "Skills: AI agents and LLM frameworks",
    "theme": 0,
    "id": 31,
-   "x": 0.2769,
-   "y": 0.7121,
+   "x": null,
+   "y": null,
    "tokens": 53
   },
   {
@@ -409,8 +409,8 @@
    "source": "Skills: Context and prompt engineering",
    "theme": 1,
    "id": 32,
-   "x": 0.1166,
-   "y": 0.323,
+   "x": null,
+   "y": null,
    "tokens": 15
   },
   {
@@ -420,8 +420,8 @@
    "source": "Skills: Retrieval and NLP",
    "theme": 2,
    "id": 33,
-   "x": 0.2626,
-   "y": 0.9481,
+   "x": null,
+   "y": null,
    "tokens": 44
   },
   {
@@ -431,8 +431,8 @@
    "source": "Skills: Data science and ML",
    "theme": 3,
    "id": 34,
-   "x": 0.8535,
-   "y": 0.9194,
+   "x": null,
+   "y": null,
    "tokens": 36
   },
   {
@@ -442,8 +442,8 @@
    "source": "Skills: Engineering",
    "theme": 4,
    "id": 35,
-   "x": 0.9307,
-   "y": 0.7238,
+   "x": null,
+   "y": null,
    "tokens": 39
   },
   {
@@ -494,149 +494,108 @@
  "labels": [
   {
    "term": "Microsoft Agent Framework",
-   "x": 0.209,
-   "y": 0.3124,
+   "x": 0.4578,
+   "y": 0.6287,
    "theme": 0,
    "passages": [
     1,
-    2,
     3,
     4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10
+    9
    ]
   },
   {
    "term": "CrewAI",
-   "x": 0.18,
-   "y": 0.3273,
+   "x": 0.4288,
+   "y": 0.6436,
    "theme": 0,
    "passages": [
     1,
-    2,
     3,
     4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10
+    9
    ]
   },
   {
    "term": "LangChain",
-   "x": 0.5743,
-   "y": 0.5642,
+   "x": 0.5716,
+   "y": 0.3505,
    "theme": 0,
    "passages": [
     13,
-    14,
-    15,
-    16,
-    19,
-    20,
-    21
+    14
    ]
   },
   {
    "term": "Model Context Protocol",
-   "x": 0.2896,
-   "y": 0.7121,
+   "x": 0.4952,
+   "y": 0.4504,
    "theme": 0,
-   "passages": [
-    31
-   ]
+   "passages": []
   },
   {
    "term": "Pydantic",
-   "x": 0.1988,
-   "y": 0.284,
+   "x": 0.4476,
+   "y": 0.6003,
    "theme": 0,
    "passages": [
     1,
-    2,
     3,
     4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10
+    9
    ]
   },
   {
    "term": "Azure AI Foundry",
-   "x": 0.2168,
-   "y": 0.3391,
+   "x": 0.4656,
+   "y": 0.6554,
    "theme": 0,
    "passages": [
     1,
-    2,
     3,
     4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10
+    9
    ]
   },
   {
    "term": "tool calling",
-   "x": 0.2606,
-   "y": 0.727,
+   "x": 0.4662,
+   "y": 0.4653,
    "theme": 0,
-   "passages": [
-    31
-   ]
+   "passages": []
   },
   {
    "term": "model routing",
-   "x": 0.2794,
-   "y": 0.6837,
+   "x": 0.485,
+   "y": 0.422,
    "theme": 0,
-   "passages": [
-    31
-   ]
+   "passages": []
   },
   {
    "term": "LLM evaluation",
-   "x": 0.2974,
-   "y": 0.7388,
+   "x": 0.503,
+   "y": 0.4771,
    "theme": 0,
-   "passages": [
-    31
-   ]
+   "passages": []
   },
   {
    "term": "fine-tuning (LoRA/PEFT)",
-   "x": 0.2393,
-   "y": 0.7054,
+   "x": 0.4449,
+   "y": 0.4437,
    "theme": 0,
-   "passages": [
-    31
-   ]
+   "passages": []
   },
   {
    "term": "context engineering",
-   "x": 0.1293,
-   "y": 0.323,
+   "x": 0.2323,
+   "y": 0.8819,
    "theme": 1,
-   "passages": [
-    32
-   ]
+   "passages": []
   },
   {
    "term": "prompt caching",
-   "x": 0.0,
-   "y": 0.2846,
+   "x": 0.1276,
+   "y": 0.7494,
    "theme": 1,
    "passages": [
     6
@@ -644,53 +603,36 @@
   },
   {
    "term": "structured outputs",
-   "x": 0.1003,
-   "y": 0.3379,
+   "x": 0.2033,
+   "y": 0.8968,
    "theme": 1,
-   "passages": [
-    32
-   ]
+   "passages": []
   },
   {
    "term": "RAG",
-   "x": 0.2753,
-   "y": 0.9481,
+   "x": 0.8873,
+   "y": 0.5923,
    "theme": 2,
-   "passages": [
-    33
-   ]
+   "passages": []
   },
   {
    "term": "embeddings and semantic search",
-   "x": 0.2463,
-   "y": 0.963,
+   "x": 0.8583,
+   "y": 0.6072,
    "theme": 2,
-   "passages": [
-    33
-   ]
+   "passages": []
   },
   {
    "term": "Azure AI Search",
-   "x": 0.1587,
-   "y": 0.3057,
+   "x": 0.8771,
+   "y": 0.5639,
    "theme": 2,
-   "passages": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10
-   ]
+   "passages": []
   },
   {
    "term": "Qdrant",
-   "x": 0.1187,
-   "y": 0.8863,
+   "x": 0.8489,
+   "y": 0.748,
    "theme": 2,
    "passages": [
     20
@@ -698,8 +640,8 @@
   },
   {
    "term": "Pinecone",
-   "x": 0.0897,
-   "y": 0.9012,
+   "x": 0.8199,
+   "y": 0.7629,
    "theme": 2,
    "passages": [
     20
@@ -707,26 +649,22 @@
   },
   {
    "term": "text classification",
-   "x": 0.2651,
-   "y": 0.9197,
+   "x": 0.8951,
+   "y": 0.619,
    "theme": 2,
-   "passages": [
-    33
-   ]
+   "passages": []
   },
   {
    "term": "named-entity recognition",
-   "x": 0.2831,
-   "y": 0.9748,
+   "x": 0.837,
+   "y": 0.5856,
    "theme": 2,
-   "passages": [
-    33
-   ]
+   "passages": []
   },
   {
    "term": "sentiment analysis",
-   "x": 0.3687,
-   "y": 1.0,
+   "x": 0.9857,
+   "y": 0.4843,
    "theme": 2,
    "passages": [
     29
@@ -734,17 +672,15 @@
   },
   {
    "term": "topic modelling",
-   "x": 0.225,
-   "y": 0.9414,
+   "x": 0.9102,
+   "y": 0.5696,
    "theme": 2,
-   "passages": [
-    33
-   ]
+   "passages": []
   },
   {
    "term": "transfer learning",
-   "x": 0.3397,
-   "y": 1.0149,
+   "x": 0.9567,
+   "y": 0.4992,
    "theme": 2,
    "passages": [
     29
@@ -752,8 +688,8 @@
   },
   {
    "term": "Python",
-   "x": 0.6651,
-   "y": 0.8491,
+   "x": 0.9388,
+   "y": 0.2413,
    "theme": 3,
    "passages": [
     23,
@@ -762,108 +698,79 @@
   },
   {
    "term": "NumPy",
-   "x": 0.8662,
-   "y": 0.9194,
+   "x": 0.6043,
+   "y": 0.2359,
    "theme": 3,
-   "passages": [
-    34
-   ]
+   "passages": []
   },
   {
    "term": "pandas",
-   "x": 0.8372,
-   "y": 0.9343,
+   "x": 0.5753,
+   "y": 0.2508,
    "theme": 3,
-   "passages": [
-    34
-   ]
+   "passages": []
   },
   {
    "term": "scikit-learn",
-   "x": 0.856,
-   "y": 0.891,
+   "x": 0.5941,
+   "y": 0.2075,
    "theme": 3,
-   "passages": [
-    34
-   ]
+   "passages": []
   },
   {
    "term": "PyTorch",
-   "x": 0.874,
-   "y": 0.9461,
+   "x": 0.6121,
+   "y": 0.2626,
    "theme": 3,
-   "passages": [
-    34
-   ]
+   "passages": []
   },
   {
    "term": "TensorFlow",
-   "x": 0.6395,
-   "y": 0.586,
+   "x": 0.6291,
+   "y": 0.3298,
    "theme": 3,
    "passages": [
-    13,
-    14,
     15,
-    16,
     24,
     25
    ]
   },
   {
    "term": "Hugging Face",
-   "x": 0.6105,
-   "y": 0.6009,
+   "x": 0.6001,
+   "y": 0.3447,
    "theme": 3,
    "passages": [
-    13,
-    14,
     15,
-    16,
     24,
     25
    ]
   },
   {
    "term": "statistical modelling",
-   "x": 0.8159,
-   "y": 0.9127,
+   "x": 0.554,
+   "y": 0.2292,
    "theme": 3,
-   "passages": [
-    34
-   ]
+   "passages": []
   },
   {
    "term": "CNNs",
-   "x": 0.8891,
-   "y": 0.8967,
+   "x": 0.6272,
+   "y": 0.2132,
    "theme": 3,
-   "passages": [
-    34
-   ]
+   "passages": []
   },
   {
    "term": "C#",
-   "x": 0.2319,
-   "y": 0.2897,
+   "x": 0.5573,
+   "y": 0.067,
    "theme": 4,
-   "passages": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10
-   ]
+   "passages": []
   },
   {
    "term": "Flask",
-   "x": 1.0127,
-   "y": 0.5956,
+   "x": 0.7926,
+   "y": 0.0405,
    "theme": 4,
    "passages": [
     21
@@ -871,8 +778,8 @@
   },
   {
    "term": "Docker",
-   "x": 0.9837,
-   "y": 0.6105,
+   "x": 0.7636,
+   "y": 0.0554,
    "theme": 4,
    "passages": [
     21
@@ -880,8 +787,8 @@
   },
   {
    "term": "AWS",
-   "x": 1.0025,
-   "y": 0.5672,
+   "x": 0.7824,
+   "y": 0.0121,
    "theme": 4,
    "passages": [
     21
@@ -889,38 +796,24 @@
   },
   {
    "term": "CircleCI",
-   "x": 0.6163,
-   "y": 0.414,
+   "x": 0.5889,
+   "y": 0.0,
    "theme": 4,
    "passages": [
-    13,
-    14,
-    15,
     16
    ]
   },
   {
    "term": "OpenTelemetry",
-   "x": 0.1844,
-   "y": 0.3567,
+   "x": 0.5283,
+   "y": 0.0819,
    "theme": 4,
-   "passages": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10
-   ]
+   "passages": []
   },
   {
    "term": "Oracle",
-   "x": 0.9396,
-   "y": 0.3855,
+   "x": 0.2904,
+   "y": 0.1606,
    "theme": 4,
    "passages": [
     27
@@ -928,8 +821,8 @@
   },
   {
    "term": "PostgreSQL",
-   "x": 0.8047,
-   "y": 0.6224,
+   "x": 0.5599,
+   "y": 0.0149,
    "theme": 4,
    "passages": [
     16
@@ -937,8 +830,8 @@
   },
   {
    "term": "MongoDB",
-   "x": 1.0205,
-   "y": 0.6223,
+   "x": 0.8004,
+   "y": 0.0672,
    "theme": 4,
    "passages": [
     21
@@ -946,26 +839,15 @@
   },
   {
    "term": "Redis",
-   "x": 0.1736,
-   "y": 0.2687,
+   "x": 0.5471,
+   "y": 0.0386,
    "theme": 4,
-   "passages": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10
-   ]
+   "passages": []
   },
   {
    "term": "Linux",
-   "x": 0.9106,
-   "y": 0.4004,
+   "x": 0.2614,
+   "y": 0.1755,
    "theme": 4,
    "passages": [
     27

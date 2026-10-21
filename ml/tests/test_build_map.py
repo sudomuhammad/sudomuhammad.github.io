@@ -33,7 +33,10 @@ CV = {
         {"degree": "MSc AI", "org": "Uni", "theme": "ml", "note": "Thesis on NLP."},
         {"degree": "BSc EE", "org": "Uni"},
     ],
-    "skills": [{"theme": "ml", "items": ["topic modelling", "Qdrant", "Rust", "Excel", "Docker"]}],
+    "skills": [
+        {"theme": "llm", "items": ["Qdrant"]},
+        {"theme": "ml", "items": ["topic modelling", "Rust", "Excel", "Docker"]},
+    ],
     "facts": ["Open to relocation."],
 }
 
@@ -42,15 +45,20 @@ def collect(cv=CV):
     return bm.collect_passages(cv, THEMES)
 
 
-def placed(passages, positions):
-    """Give drawn passages fixed positions (and optionally themes), as build() would."""
+def placed(passages, positions=None):
+    """Give drawn passages positions (by id, default the centre), as build() would."""
     for p in passages:
-        if p["theme"] is None:
-            p.update(x=None, y=None)
-        else:
-            x, y, theme = positions.get(p["id"], (0.5, 0.5, p["theme"]))
-            p.update(x=x, y=y, theme=theme)
+        x, y = (positions or {}).get(p["id"], (0.5, 0.5)) if bm.is_drawn(p) else (None, None)
+        p.update(x=x, y=y)
     return passages
+
+
+def labels_of(cv, passages):
+    return {label["term"]: label for label in bm.skill_labels(cv, passages)}
+
+
+def ids(passages, *titles):
+    return [p["id"] for p in passages if p["title"] in titles]
 
 
 class TestCollectPassages:
@@ -61,7 +69,7 @@ class TestCollectPassages:
         assert kinds.count("point") == 2
         assert kinds.count("tools") == 2
         assert kinds.count("education") == 2
-        assert kinds.count("skills") == 1
+        assert kinds.count("skills") == 2
         assert kinds.count("fact") == 1
 
     def test_every_passage_has_a_title(self):
@@ -79,11 +87,12 @@ class TestCollectPassages:
 
     def test_points_inherit_the_role_theme_unless_they_name_one(self):
         themes = {p["title"]: p["theme"] for p in collect() if p["kind"] in ("point", "context", "tools")}
-        assert themes == {"Acme": 0, "RAG": 0, "Deploys": 1, "Acme toolkit": None, "Beta": 1, "Beta toolkit": None}
+        assert themes == {"Acme": 0, "RAG": 0, "Deploys": 1, "Acme toolkit": 0, "Beta": 1, "Beta toolkit": 1}
 
-    def test_untagged_passages_are_not_drawn(self):
-        untagged = {p["title"] for p in collect() if p["theme"] is None}
-        assert untagged == {"BSc EE", "About", "Acme toolkit", "Beta toolkit"}  # tool lists stay searchable only
+    def test_only_tagged_prose_is_drawn(self):
+        # Untagged passages and lists (tools, skills) stay searchable but get no place on the map.
+        hidden = {p["title"] for p in collect() if not bm.is_drawn(p)}
+        assert hidden == {"BSc EE", "About", "Acme toolkit", "Beta toolkit", "LLM work", "ML"}
 
     def test_unknown_theme_fails_loudly(self):
         cv = {**CV, "skills": [{"theme": "nope", "items": []}]}
@@ -92,64 +101,49 @@ class TestCollectPassages:
 
 
 class TestSkillLabels:
-    def test_tool_placed_at_centre_of_passages_mentioning_it(self):
-        passages = placed(collect(), {1: (0.2, 0.4, 1), 2: (0.8, 0.6, 2)})
-        labels = {label["term"]: label for label in bm.skill_labels(CV, passages)}
-        assert (labels["Qdrant"]["x"], labels["Qdrant"]["y"]) == (0.2, 0.4)
+    def test_placed_at_passages_in_its_theme_that_name_it(self):
+        passages = collect()
+        rag = ids(passages, "RAG")
+        labels = labels_of(CV, placed(passages, {rag[0]: (0.2, 0.4)}))
+        assert (labels["Qdrant"]["x"], labels["Qdrant"]["y"], labels["Qdrant"]["passages"]) == (0.2, 0.4, rag)
+        assert labels["Qdrant"]["theme"] == 0  # the theme of the list it's in
 
-    def test_label_takes_the_theme_of_its_skills_list_not_its_evidence(self):
-        # Qdrant's only evidence is an "llm" bullet, but it's listed under "ml".
-        passages = placed(collect(), {})
-        labels = {label["term"]: label for label in bm.skill_labels(CV, passages)}
-        assert passages[labels["Qdrant"]["passages"][0]]["theme"] == 0
-        assert labels["Qdrant"]["theme"] == 1
+    def test_mentions_in_another_theme_dont_count(self):
+        # Listed under "ml" now, so the "llm" bullet naming it isn't evidence; Acme lists it as a
+        # tool, so it falls back to Acme's "ml" bullet instead.
+        cv = {**CV, "skills": [{"theme": "ml", "items": ["Qdrant"]}]}
+        passages = placed(collect(cv))
+        assert labels_of(cv, passages)["Qdrant"]["passages"] == ids(passages, "Deploys")
+
+    def test_unmentioned_tool_falls_back_to_its_roles_points_in_the_theme(self):
+        passages = placed(collect())
+        assert labels_of(CV, passages)["Rust"]["passages"] == ids(passages, "Deploys")
+
+    def test_role_without_points_falls_back_to_its_context(self):
+        passages = placed(collect())
+        assert labels_of(CV, passages)["Excel"]["passages"] == ids(passages, "Beta")
+
+    def test_skill_without_evidence_sits_at_the_centre_of_its_theme(self):
+        passages = collect()
+        beta, deploys, msc = ids(passages, "Beta"), ids(passages, "Deploys"), ids(passages, "MSc AI")
+        placed(passages, {beta[0]: (0.1, 0.1), deploys[0]: (0.4, 0.4), msc[0]: (1.0, 1.0)})
+        label = labels_of(CV, passages)["topic modelling"]
+        # Within the small spread that keeps labels sharing a point apart (see TestSpreadCoincident).
+        assert label["passages"] == []
+        assert (label["x"], label["y"]) == (pytest.approx(0.5, abs=0.03), pytest.approx(0.5, abs=0.03))
 
     def test_only_listed_skills_are_labelled(self):
         # "Go" is in a role's tech list but not in any skills list.
-        labels = bm.skill_labels(CV, placed(collect(), {}))
+        labels = bm.skill_labels(CV, placed(collect()))
         assert "Go" not in {label["term"] for label in labels}
         json.dumps(labels, allow_nan=False)
 
-    def test_unmentioned_tool_falls_back_to_role_points(self):
-        passages = placed(collect(), {1: (0.2, 0.2, 1), 2: (0.4, 0.4, 1)})
-        labels = {label["term"]: label for label in bm.skill_labels(CV, passages)}
-        assert labels["Rust"]["x"] == pytest.approx(0.3)
-
-    def test_role_without_points_falls_back_to_its_context(self):
-        passages = placed(collect(), {})
-        labels = {label["term"]: label for label in bm.skill_labels(CV, passages)}
-        assert [passages[i]["title"] for i in labels["Excel"]["passages"]] == ["Beta"]
-
-    def test_declared_skill_falls_back_to_its_skills_group(self):
-        passages = placed(collect(), {})
-        group = next(p for p in passages if p["kind"] == "skills")
-        group.update(x=0.9, y=0.1)
-        labels = {label["term"]: label for label in bm.skill_labels(CV, passages)}
-        assert labels["topic modelling"]["passages"] == [group["id"]]
-        assert labels["topic modelling"]["theme"] == 1
-
-    def test_list_passages_are_not_evidence_when_prose_exists(self):
-        # "Qdrant" appears in a bullet, the role's tools list and the skills list;
-        # only the bullet should count.
-        passages = placed(collect(), {})
-        hits = {label["term"]: label for label in bm.skill_labels(CV, passages)}["Qdrant"]["passages"]
-        assert [passages[i]["kind"] for i in hits] == ["point"]
-
     def test_word_boundaries_prevent_partial_matches(self):
-        cv = {
-            **CV,
-            "roles": [
-                {
-                    **CV["roles"][0],
-                    "points": [{"title": "Tooling", "text": "Used Dockerfile tooling."}],
-                    "tech": ["Docker"],
-                }
-            ],
-        }
-        passages = placed(collect(cv), {})
-        hits = {label["term"]: label for label in bm.skill_labels(cv, passages)}["Docker"]["passages"]
-        # Falls back to the role's points because "Dockerfile" is not "Docker".
-        assert hits == [p["id"] for p in passages if p["kind"] == "point"]
+        tooling = {"title": "Tooling", "text": "Used Dockerfile.", "theme": "ml"}
+        cv = {**CV, "roles": [{**CV["roles"][0], "points": [tooling]}]}
+        passages = placed(collect(cv))
+        # "Dockerfile" is not "Docker"; it still counts as Acme's ml bullet, as a role that lists Docker.
+        assert labels_of(cv, passages)["Docker"]["passages"] == ids(passages, "Tooling")
 
 
 def test_quantise_round_trip_preserves_ranking():
