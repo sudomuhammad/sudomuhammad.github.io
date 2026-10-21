@@ -72,6 +72,7 @@
         "AWS",
         "CircleCI",
         "OpenTelemetry",
+        "Oracle",
         "PostgreSQL",
         "MongoDB",
         "Redis",
@@ -206,7 +207,8 @@
       "points": [
         {
           "title": "Open-source LLM features",
-          "text": "Used open-source language models for the product’s AI features, and curated the datasets behind them."
+          "text": "Used open-source language models for the product’s AI features, and curated the datasets behind them.",
+          "theme": "nlp"
         },
         {
           "theme": "nlp",

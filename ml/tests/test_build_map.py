@@ -25,7 +25,7 @@ CV = {
                 {"title": "RAG", "text": "Built RAG with Qdrant."},
                 {"title": "Deploys", "text": "Deployed with Docker.", "theme": "ml"},
             ],
-            "tech": ["Qdrant", "Docker", "Rust"],
+            "tech": ["Qdrant", "Docker", "Rust", "Go"],
         },
         {"title": "Analyst", "org": "Beta", "theme": "ml", "context": "Reports.", "points": [], "tech": ["Excel"]},
     ],
@@ -33,7 +33,7 @@ CV = {
         {"degree": "MSc AI", "org": "Uni", "theme": "ml", "note": "Thesis on NLP."},
         {"degree": "BSc EE", "org": "Uni"},
     ],
-    "skills": [{"theme": "ml", "items": ["topic modelling", "Qdrant"]}],
+    "skills": [{"theme": "ml", "items": ["topic modelling", "Qdrant", "Rust", "Excel", "Docker"]}],
     "facts": ["Open to relocation."],
 }
 
@@ -79,11 +79,11 @@ class TestCollectPassages:
 
     def test_points_inherit_the_role_theme_unless_they_name_one(self):
         themes = {p["title"]: p["theme"] for p in collect() if p["kind"] in ("point", "context", "tools")}
-        assert themes == {"Acme": 0, "RAG": 0, "Deploys": 1, "Acme toolkit": 0, "Beta": 1, "Beta toolkit": 1}
+        assert themes == {"Acme": 0, "RAG": 0, "Deploys": 1, "Acme toolkit": None, "Beta": 1, "Beta toolkit": None}
 
     def test_untagged_passages_are_not_drawn(self):
         untagged = {p["title"] for p in collect() if p["theme"] is None}
-        assert untagged == {"BSc EE", "About"}
+        assert untagged == {"BSc EE", "About", "Acme toolkit", "Beta toolkit"}  # tool lists stay searchable only
 
     def test_unknown_theme_fails_loudly(self):
         cv = {**CV, "skills": [{"theme": "nope", "items": []}]}
@@ -95,20 +95,25 @@ class TestSkillLabels:
     def test_tool_placed_at_centre_of_passages_mentioning_it(self):
         passages = placed(collect(), {1: (0.2, 0.4, 1), 2: (0.8, 0.6, 2)})
         labels = {label["term"]: label for label in bm.skill_labels(CV, passages)}
-        assert (labels["Qdrant"]["x"], labels["Qdrant"]["y"], labels["Qdrant"]["theme"]) == (0.2, 0.4, 1)
+        assert (labels["Qdrant"]["x"], labels["Qdrant"]["y"]) == (0.2, 0.4)
+
+    def test_label_takes_the_theme_of_its_skills_list_not_its_evidence(self):
+        # Qdrant's only evidence is an "llm" bullet, but it's listed under "ml".
+        passages = placed(collect(), {})
+        labels = {label["term"]: label for label in bm.skill_labels(CV, passages)}
+        assert passages[labels["Qdrant"]["passages"][0]]["theme"] == 0
+        assert labels["Qdrant"]["theme"] == 1
+
+    def test_only_listed_skills_are_labelled(self):
+        # "Go" is in a role's tech list but not in any skills list.
+        labels = bm.skill_labels(CV, placed(collect(), {}))
+        assert "Go" not in {label["term"] for label in labels}
+        json.dumps(labels, allow_nan=False)
 
     def test_unmentioned_tool_falls_back_to_role_points(self):
         passages = placed(collect(), {1: (0.2, 0.2, 1), 2: (0.4, 0.4, 1)})
         labels = {label["term"]: label for label in bm.skill_labels(CV, passages)}
         assert labels["Rust"]["x"] == pytest.approx(0.3)
-
-    def test_tool_with_no_evidence_is_skipped_not_nan(self):
-        # "Excel" is never mentioned, its role has no bullet points, and its untagged context isn't drawn.
-        beta = {k: v for k, v in CV["roles"][1].items() if k != "theme"}
-        cv = {**CV, "roles": [CV["roles"][0], beta]}
-        labels = bm.skill_labels(cv, placed(collect(cv), {}))
-        assert "Excel" not in {label["term"] for label in labels}
-        json.dumps(labels, allow_nan=False)
 
     def test_role_without_points_falls_back_to_its_context(self):
         passages = placed(collect(), {})
@@ -142,7 +147,7 @@ class TestSkillLabels:
             ],
         }
         passages = placed(collect(cv), {})
-        hits = bm.skill_labels(cv, passages)[0]["passages"]
+        hits = {label["term"]: label for label in bm.skill_labels(cv, passages)}["Docker"]["passages"]
         # Falls back to the role's points because "Dockerfile" is not "Docker".
         assert hits == [p["id"] for p in passages if p["kind"] == "point"]
 

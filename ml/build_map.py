@@ -137,13 +137,14 @@ def collect_passages(cv: dict[str, Any], themes: list[Theme]) -> list[Passage]:
             for point in role["points"]
         )
         tools = ", ".join(role["tech"])
+        # Searchable but not drawn: a list of names would pull the layout towards shared tools.
         passages.append(
             {
                 "kind": "tools",
                 "title": f"{role['org']} toolkit",
                 "text": f"Tools used as {role['title']} at {role['org']}: {tools}.",
                 "source": source,
-                "theme": theme,
+                "theme": None,
             }
         )
     for edu in cv["education"]:
@@ -259,7 +260,10 @@ def layout(vectors: NDArray[np.float32]) -> NDArray[np.float32]:
 
 
 def skill_labels(cv: dict[str, Any], passages: list[Passage]) -> list[dict[str, Any]]:
-    """Place each tool or skill at the centre of the map passages that are evidence for it.
+    """Place each skill from cv.json's skills lists at the centre of the passages that are evidence for it.
+
+    Only the curated skills are labelled (a role's full tech list stays in the CV), and each
+    takes the theme of the list it's in, not the theme most of its evidence happens to have.
 
     Evidence, in order of preference:
       1. prose passages that name it (bullets, role context, education);
@@ -268,14 +272,12 @@ def skill_labels(cv: dict[str, Any], passages: list[Passage]) -> list[dict[str, 
       3. the skills passage that lists it.
     Terms with no evidence are skipped rather than placed at a made-up position.
     """
-    from collections import Counter
-
     on_map = [p for p in passages if p.get("x") is not None]
     skill_passages = [p for p in passages if p["kind"] == "skills"]  # one per cv.json skills entry, in order
-    role_terms = [t for role in cv["roles"] for t in role["tech"]]
-    skill_terms = [t for skill in cv.get("skills", []) for t in skill["items"]]
+    skills = cv.get("skills", [])
+    theme_of = {term: p["theme"] for p, skill in zip(skill_passages, skills, strict=True) for term in skill["items"]}
     labels = []
-    for term in dict.fromkeys(role_terms + skill_terms):
+    for term, theme in theme_of.items():
         pattern = re.compile(rf"(?<!\w){re.escape(term)}(?!\w)", re.IGNORECASE)
         hits = [p for p in on_map if p["kind"] not in LIST_KINDS and pattern.search(p["text"])]
         if not hits:
@@ -284,7 +286,7 @@ def skill_labels(cv: dict[str, Any], passages: list[Passage]) -> list[dict[str, 
                 kind = "point" if role["points"] else "context"
                 hits += [p for p in on_map if p["kind"] == kind and p["source"] == f"{role['title']}, {role['org']}"]
         if not hits:
-            hits = [p for p, s in zip(skill_passages, cv.get("skills", []), strict=True) if term in s["items"]]
+            hits = [p for p, s in zip(skill_passages, skills, strict=True) if term in s["items"]]
         if not hits:
             continue
         labels.append(
@@ -292,7 +294,7 @@ def skill_labels(cv: dict[str, Any], passages: list[Passage]) -> list[dict[str, 
                 "term": term,
                 "x": round(sum(p["x"] for p in hits) / len(hits), 4),
                 "y": round(sum(p["y"] for p in hits) / len(hits), 4),
-                "theme": Counter(p["theme"] for p in hits).most_common(1)[0][0],
+                "theme": theme,
                 "passages": [p["id"] for p in hits],
             }
         )
