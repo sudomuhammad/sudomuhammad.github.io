@@ -3,6 +3,7 @@
 import type { Chapter } from '../data/story';
 import Card from './Card.astro';
 import Step from './Step.astro';
+import ApproachCard from './cards/ApproachCard.astro';
 import ClusterCard from './cards/ClusterCard.astro';
 import ContactCard from './cards/ContactCard.astro';
 import SkillsCard from './cards/SkillsCard.astro';
@@ -25,8 +26,11 @@ const { chapter } = Astro.props;
             <p>{chapter.lede}</p>
           </Card>
         )}
+        {step.kind === 'approach' && (
+          <ApproachCard headingId={`${chapter.id}-title`} title={chapter.title} principles={step.principles} />
+        )}
         {step.kind === 'cluster' && <ClusterCard {...step} />}
-        {step.kind === 'skills' && <SkillsCard group={step.group} items={step.items} />}
+        {step.kind === 'skills' && <SkillsCard group={step.group} summary={step.summary} items={step.items} />}
         {step.kind === 'contact' && <ContactCard headingId={`${chapter.id}-title`} title={chapter.title} lede={chapter.lede} />}
       </Step>
     ))

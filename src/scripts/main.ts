@@ -6,6 +6,7 @@ import { MapStage } from './map/stage';
 import { SearchService } from './search/search-service';
 import { StoryController } from './story/controller';
 import { AskBar } from './ui/ask-bar';
+import { Principles } from './ui/principles';
 import { ReadingMeter } from './ui/reading-meter';
 import { introWanted, playTokenIntro } from './ui/token-intro';
 import { Tooltip } from './ui/tooltip';
@@ -51,8 +52,11 @@ const story = new StoryController(
   (step) => {
     document.documentElement.setAttribute('data-step-kind', step.kind);
     meter.show(step);
+    principles.reset();
   },
 );
+
+const principles = new Principles($('[data-principles]'), (index) => story.emphasise(index));
 
 const search = new SearchService((status) => ask.setStatus(status));
 const ask = new AskBar(askRoot, { stage, search, onDismiss: () => story.render() });

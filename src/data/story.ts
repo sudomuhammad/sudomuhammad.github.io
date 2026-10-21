@@ -1,17 +1,27 @@
 // The scroll story, derived once from the CV and the map. Astro renders the
 // cards from it and the browser builds each step's scene from it, so the two
 // can't drift apart.
+import { approach } from './approach';
 import { skills } from './cv';
 import { clusters, labels, mappedPassages, type Cluster, type MappedPassage } from './map';
+import { TECHNIQUES_KEY, techniques, toolsByArea, workOrder } from './work';
+
+/** A "How I work" principle with its evidence resolved to map passages. */
+export interface Principle {
+  title: string;
+  text: string;
+  evidence: MappedPassage[];
+}
 
 export type Step =
   | { kind: 'intro'; id: string }
+  | { kind: 'approach'; id: string; principles: Principle[] }
   | { kind: 'chapter'; id: string; chapter: ChapterId }
   | { kind: 'cluster'; id: string; cluster: Cluster; evidence: MappedPassage[]; skills: string[] }
-  | { kind: 'skills'; id: string; group: string; items: string[]; terms: string[] }
+  | { kind: 'skills'; id: string; group: string; summary: string; items: string[]; terms: string[] }
   | { kind: 'contact'; id: string };
 
-export type ChapterId = 'work' | 'skills' | 'contact';
+export type ChapterId = 'approach' | 'work' | 'contact';
 
 export interface Chapter {
   id: ChapterId;
@@ -22,46 +32,69 @@ export interface Chapter {
   steps: Step[];
 }
 
-const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+// ------------------------------------------------------------------ approach: one step, all principles
+const passageByTitle = new Map(mappedPassages.map((p) => [p.title, p]));
 
-// ------------------------------------------------------------------ work: one step per cluster
+function evidenceFor(title: string): MappedPassage {
+  const passage = passageByTitle.get(title);
+  // Fail the build rather than ship a principle pointing at nothing.
+  if (!passage) throw new Error(`approach.ts: no map passage titled "${title}"`);
+  return passage;
+}
+
+const principles: Principle[] = approach.principles.map((p) => ({ ...p, evidence: p.evidence.map(evidenceFor) }));
+
+// ------------------------------------------------------------------ work: one step per area, in workOrder
 const EVIDENCE_PER_CLUSTER = 3;
 
-const clusterSteps: Step[] = clusters.map((cluster) => ({
-  kind: 'cluster',
-  id: `work-${cluster.key}`,
-  cluster,
-  evidence: mappedPassages
-    .filter((p) => p.cluster === cluster.id && (p.kind === 'point' || p.kind === 'education'))
-    .slice(0, EVIDENCE_PER_CLUSTER),
-  skills: labels.filter((l) => l.cluster === cluster.id).map((l) => l.term),
-}));
+// Every skill in the CV appears in exactly one area's tools, so no tool shows up twice.
+(() => {
+  const listed = Object.values(toolsByArea).flat();
+  const duplicates = listed.filter((t, i) => listed.indexOf(t) !== i);
+  const missing = skills.flatMap((s) => s.items).filter((t) => !listed.includes(t));
+  if (duplicates.length) throw new Error(`work.ts: listed in more than one area: ${duplicates.join(', ')}`);
+  if (missing.length) throw new Error(`work.ts: skills not in any area: ${missing.join(', ')}`);
+})();
 
-// ------------------------------------------------------------------ skills: one step per group
-const skillSteps: Step[] = skills.map((s) => ({
-  kind: 'skills',
-  id: `skills-${slug(s.group)}`,
-  group: s.group,
-  items: s.items,
-  // Only items that exist as labels on the map can light up.
-  terms: labels.filter((l) => s.items.some((i) => i.toLowerCase() === l.term.toLowerCase())).map((l) => l.term),
-}));
+/** Only tools that exist as labels on the map can light up. */
+const termsOnMap = (tools: string[]) =>
+  labels.filter((l) => tools.some((t) => t.toLowerCase() === l.term.toLowerCase())).map((l) => l.term);
+
+function areaStep(key: (typeof workOrder)[number]): Step {
+  const tools = toolsByArea[key];
+  if (key === TECHNIQUES_KEY) {
+    return { kind: 'skills', id: `work-${key}`, group: techniques.name, summary: techniques.summary, items: tools, terms: termsOnMap(tools) };
+  }
+  const cluster = clusters.find((c) => c.key === key);
+  if (!cluster) throw new Error(`work.ts: no cluster with key "${key}" in map.json`);
+  return {
+    kind: 'cluster',
+    id: `work-${key}`,
+    cluster,
+    evidence: mappedPassages
+      .filter((p) => p.cluster === cluster.id && (p.kind === 'point' || p.kind === 'education'))
+      .slice(0, EVIDENCE_PER_CLUSTER),
+    skills: tools,
+  };
+}
+
+const workSteps: Step[] = workOrder.map(areaStep);
 
 // ------------------------------------------------------------------ chapters
 export const chapters: Chapter[] = [
   {
+    id: 'approach',
+    nav: approach.title,
+    title: approach.title,
+    lede: '',
+    steps: [{ kind: 'approach', id: 'approach', principles }],
+  },
+  {
     id: 'work',
     nav: 'Work',
     title: 'What I work on',
-    lede: 'Six areas the map found in my CV. Each stop pulls its points together.',
-    steps: [{ kind: 'chapter', id: 'work', chapter: 'work' }, ...clusterSteps],
-  },
-  {
-    id: 'skills',
-    nav: 'Skills',
-    title: 'Tools and techniques',
-    lede: 'Where each skill sits on the map, group by group.',
-    steps: [{ kind: 'chapter', id: 'skills', chapter: 'skills' }, ...skillSteps],
+    lede: 'The areas the map found in my CV, plus the techniques that run through them.',
+    steps: [{ kind: 'chapter', id: 'work', chapter: 'work' }, ...workSteps],
   },
   {
     id: 'contact',
@@ -84,13 +117,13 @@ export const stepsById = new Map<string, Step>(orderedSteps.map((step) => [step.
 // reader is, counted as the CV tokens (MiniLM WordPiece) its cards have shown so far.
 
 const sum = (ids: number[]) => mappedPassages.filter((p) => ids.includes(p.id)).reduce((n, p) => n + p.tokens, 0);
-const skillsPassage = (group: string) => mappedPassages.filter((p) => p.source === `Skills: ${group}`).map((p) => p.id);
 
 const TOKENS_SHOWN: { [K in Step['kind']]: (step: Extract<Step, { kind: K }>) => number } = {
   intro: () => 0,
+  approach: (step) => sum([...new Set(step.principles.flatMap((p) => p.evidence.map((e) => e.id)))]),
   chapter: () => 0,
   cluster: (step) => sum(step.evidence.map((p) => p.id)),
-  skills: (step) => sum(skillsPassage(step.group)),
+  skills: (step) => sum([...new Set(labels.filter((l) => step.terms.includes(l.term)).flatMap((l) => l.passages))]),
   contact: () => 0,
 };
 

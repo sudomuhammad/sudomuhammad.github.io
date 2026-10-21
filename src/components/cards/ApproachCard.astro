@@ -1,0 +1,99 @@
+---
+// "How I work": each principle is a button. Pointing at one (hover, focus or tap)
+// lights its evidence on the map; see src/scripts/ui/principles.ts.
+import type { Principle } from '../../data/story';
+import Card from '../Card.astro';
+
+interface Props {
+  headingId: string;
+  title: string;
+  principles: Principle[];
+}
+const { headingId, title, principles } = Astro.props;
+---
+
+<Card>
+  <h2 id={headingId}>{title}</h2>
+  <ol class="principles" data-principles>
+    {
+      principles.map((p, i) => (
+        <li>
+          <button type="button" class="principle" data-principle={i} aria-pressed="false">
+            <span class="title">{p.title}</span>
+            <span class="text">{p.text}</span>
+            <span class="visually-hidden">
+              Shown in: {p.evidence.map((e) => e.title).join(', ')}.
+            </span>
+          </button>
+        </li>
+      ))
+    }
+  </ol>
+</Card>
+
+<style>
+  .principles {
+    display: grid;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .principle {
+    display: block;
+    min-height: var(--tap);
+    padding: 0.5rem 0.75rem;
+    margin-inline: -0.75rem;
+    width: calc(100% + 1.5rem);
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--ink-2);
+    font: inherit;
+    line-height: 1.5;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      background-color 160ms ease-out,
+      color 160ms ease-out;
+  }
+
+  .title {
+    display: block;
+    color: var(--ink);
+    font-weight: 650;
+  }
+
+  .text {
+    display: block;
+    font-size: var(--step--1);
+  }
+
+  .principle:hover,
+  .principle[aria-pressed='true'] {
+    background: color-mix(in srgb, var(--ink) 6%, transparent);
+  }
+
+  /* While one principle is selected, the others recede. */
+  .principles:has([aria-pressed='true']) .principle:not([aria-pressed='true']) {
+    color: var(--ink-3);
+  }
+
+  .principles:has([aria-pressed='true']) .principle:not([aria-pressed='true']) .title {
+    color: var(--ink-2);
+  }
+
+  /* Stacked (same query as src/scripts/layout.ts): titles only, as on the Work cards, so the
+     map keeps the top of the screen; tapping a principle shows its text. */
+  @media (max-width: 959px) and (min-height: 501px) {
+    .text {
+      display: none;
+    }
+
+    .principle[aria-pressed='true'] .text {
+      display: block;
+      margin-top: 0.25rem;
+    }
+  }
+</style>

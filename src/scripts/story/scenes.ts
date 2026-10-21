@@ -11,6 +11,8 @@ export interface SceneContext {
   cardShift: number;
   /** Phone held upright: the map sits above the card, so long text is split to fit. */
   stacked: boolean;
+  /** Which item in the active card the visitor is pointing at (e.g. a principle), if any. */
+  emphasis: number | null;
 }
 
 type Builders = { [K in Step['kind']]: (step: Extract<Step, { kind: K }>, ctx: SceneContext) => Scene };
@@ -23,6 +25,17 @@ const shifted = (ctx: SceneContext) => ({ ...OVERVIEW.camera, zoom: 1 - 2 * ctx.
 const builders: Builders = {
   // The name leads; the map is a quiet, unlabelled backdrop until the visitor scrolls.
   intro: () => ({ ...OVERVIEW, labels: { kind: 'none' }, fade: 0.35 }),
+
+  // The whole map with every principle's evidence lit; pointing at one narrows it to that one.
+  approach: ({ principles }, ctx) => {
+    const shown = ctx.emphasis === null ? principles : [principles[ctx.emphasis]];
+    return {
+      ...OVERVIEW,
+      camera: shifted(ctx),
+      lit: [...new Set(shown.flatMap((p) => p.evidence.map((e) => e.id)))],
+      labels: { kind: 'none' }, // lit passages are always named
+    };
+  },
 
   chapter: (_, ctx) => ({ ...OVERVIEW, camera: shifted(ctx) }),
 

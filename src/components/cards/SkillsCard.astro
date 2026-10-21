@@ -3,13 +3,15 @@ import Card from '../Card.astro';
 
 interface Props {
   group: string;
+  summary: string;
   items: string[];
 }
-const { group, items } = Astro.props;
+const { group, summary, items } = Astro.props;
 ---
 
 <Card>
   <h2>{group}</h2>
+  <p>{summary}</p>
   <p class="items">{items.join(', ')}</p>
 </Card>
 

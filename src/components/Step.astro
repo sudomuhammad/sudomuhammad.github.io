@@ -14,15 +14,23 @@ const { id, align = 'side' } = Astro.props;
 </div>
 
 <style>
+  /* Each layout only sets the step's padding; the card's height cap follows from it, so a
+     card never runs under the top bar or the ask button and scrolls inside itself instead. */
   .step {
+    --pad-top: 5rem;
+    --pad-bottom: 5rem;
+    --pad-inline: var(--gutter);
     min-height: 100svh;
     display: flex;
     align-items: center;
-    padding: 5rem var(--gutter);
+    padding: var(--pad-top) var(--pad-inline) var(--pad-bottom);
     pointer-events: none; /* only cards catch the pointer; the map stays hoverable */
   }
 
   .step > :global(*) {
+    max-height: calc(100svh - var(--pad-top) - var(--pad-bottom));
+    overflow-y: auto;
+    overscroll-behavior: contain;
     opacity: 0.25;
     transition: opacity 400ms ease-out;
   }
@@ -32,33 +40,28 @@ const { id, align = 'side' } = Astro.props;
   }
 
   .step.centre {
+    --pad-bottom: 8rem;
     justify-content: center;
     align-items: flex-end;
-    padding-bottom: 8rem;
   }
 
   /* Stacked (phones held upright; same query as src/scripts/layout.ts): cards sit low so
      the map has the top of the screen, clear of the ask button below them. */
   @media (max-width: 959px) and (min-height: 501px) {
     .step {
+      --pad-top: max(5rem, 40svh); /* the map always keeps the top of the screen */
+      --pad-bottom: calc(var(--ask-bottom) + var(--tap) + 1.25rem);
+      --pad-inline: 1rem;
       align-items: flex-end;
-      padding: 5rem 1rem calc(var(--ask-bottom) + var(--tap) + 1.25rem);
     }
   }
 
-  /* Short screens (phones turned sideways): cards stay beside the map and scroll inside
-     themselves rather than running under the top bar or the ask button. */
+  /* Short screens (phones turned sideways): cards stay beside the map, centred. */
   @media (max-height: 500px) {
     .step,
     .step.centre {
+      --pad-bottom: 4.5rem;
       align-items: center;
-      padding-block: 5rem 4.5rem; /* clear of the top bar and the ask button */
-    }
-
-    .step > :global(.card) {
-      max-height: calc(100svh - 9.5rem);
-      overflow-y: auto;
-      overscroll-behavior: contain;
     }
   }
 
