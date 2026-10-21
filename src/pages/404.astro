@@ -1,0 +1,36 @@
+---
+// GitHub Pages serves this for any unknown path. No map here: just a way back.
+import { meta, notFound } from '../data/copy';
+import Base from '../layouts/Base.astro';
+---
+
+<Base title={`${notFound.title} · ${meta.title}`} description={meta.description} noindex>
+  <main class="not-found">
+    <h1>{notFound.title}</h1>
+    <p>{notFound.text}</p>
+    <a class="button primary" href="/">{notFound.back}</a>
+  </main>
+</Base>
+
+<style>
+  .not-found {
+    min-height: 100svh;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 1.25rem;
+    padding: var(--gutter);
+    text-align: center;
+  }
+
+  h1 {
+    font-size: var(--step-3);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    font-variation-settings: 'wdth' 85;
+  }
+
+  p {
+    color: var(--ink-2);
+  }
+</style>

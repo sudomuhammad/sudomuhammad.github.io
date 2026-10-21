@@ -35,6 +35,12 @@ export const chapterCopy = {
   },
 };
 
+export const notFound = {
+  title: 'Page not found',
+  text: 'There’s nothing at this address. Everything is on one page.',
+  back: 'Back to the map',
+};
+
 /** Questions offered in the ask bar. */
 export const askSuggestions = [
   'Have you shipped RAG to production?',
