@@ -1,7 +1,7 @@
 ---
-// Every role and degree on one card, with the full CV a click away. Pointing at a role
+// Every role and degree on one card. Pointing at a role
 // rings its work on the map; the detail of each role is in the Work sections above.
-import { CV_PDF, period, type Education } from '../../data/cv';
+import { period, type Education } from '../../data/cv';
 import type { RoleEntry } from '../../data/story';
 import Card from '../Card.astro';
 import Pointables from '../Pointables.astro';
@@ -39,9 +39,6 @@ const items = roles.map(({ role }) => ({
       ))
     }
   </ul>
-  <p class="download">
-    <a class="button" href={CV_PDF} download>Download CV (PDF)</a>
-  </p>
 </Card>
 
 <style>
@@ -62,9 +59,5 @@ const items = roles.map(({ role }) => ({
 
   .degrees .meta {
     font-weight: 400;
-  }
-
-  .download {
-    margin-top: 1.2rem;
   }
 </style>
