@@ -1,6 +1,6 @@
 // The hover tooltip for points on the map.
 import { orgOf, themeOf } from '../../data/map';
-import type { Anchor } from '../map/stage';
+import type { Anchor } from '../map/scene';
 import { html } from './html';
 
 const OFFSET = 14;

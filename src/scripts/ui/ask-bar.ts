@@ -3,7 +3,8 @@
 import { orgOf, passages } from '../../data/map';
 import type { SearchResult, SearchService } from '../search/search-service';
 import type { LoadStatus } from '../search/semantic';
-import { OVERVIEW, type MapStage } from '../map/stage';
+import { OVERVIEW } from '../map/scene';
+import type { MapStage } from '../map/stage';
 import { html } from './html';
 
 const passageById = new Map(passages.map((p) => [p.id, p]));

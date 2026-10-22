@@ -1,61 +1,16 @@
-// The full-screen map that stays on stage for the whole story. Chapters drive it
-// with declarative scenes (camera, focus, highlights, labels, particle text). A scene change only moves each particle's home; the physics
-// turns it into motion.
+// The full-screen map that stays on stage for the whole story. Chapters drive it with
+// declarative scenes (see scene.ts). A scene change only moves each particle's home; the
+// physics turns it into motion. This class owns the loop, drawing and input; the camera
+// maths, the question particle and the grid live in their own modules.
 import type { Label, MappedPassage, Theme } from '../../data/map';
 import { createGlCloud, type GlCloud } from './gl-cloud';
+import { drawGrid } from './grid';
 import { LabelLayer, type LabelItem } from './label-layer';
 import { ParticleSystem, type Pointer } from './particles';
+import { QueryParticle } from './query';
 import { seededRandom, shufflePairs } from './random';
+import { frameCamera, OVERVIEW, project, type Anchor, type Camera, type Insets, type Scene, type Viewport } from './scene';
 import { sampleText } from './text-sampler';
-
-/** Something the visitor can point at: a CV passage or a skill label. */
-export type Anchor = { type: 'passage'; passage: MappedPassage } | { type: 'label'; label: Label };
-
-/** In map units (the unit square UMAP produced). Zoom 1 fits the whole map in the viewport. */
-export interface Camera {
-  cx: number;
-  cy: number;
-  zoom: number;
-  /** Move the picture sideways by this fraction of the viewport width, to clear a card. */
-  shift: number;
-}
-
-export type LabelMode =
-  | { kind: 'overview' } // passage titles; skills too on wide screens
-  | { kind: 'focus' } // the focused themes' titles and skills
-  | { kind: 'terms'; terms: string[] } // just these skills
-  | { kind: 'none' };
-
-export interface Scene {
-  camera: Camera;
-  /** Theme ids to light; others dim. null lights everything. */
-  focus: number[] | null;
-  /** Passage ids and skill terms to ring. */
-  lit: number[];
-  litTerms: string[];
-  labels: LabelMode;
-  /** Re-form the cloud into these lines of text. */
-  text: string[] | null;
-  /** Overall opacity of the map, e.g. low behind the intro headline. */
-  fade: number;
-}
-
-export const OVERVIEW: Scene = {
-  camera: { cx: 0.5, cy: 0.5, zoom: 1, shift: 0 },
-  focus: null,
-  lit: [],
-  litTerms: [],
-  labels: { kind: 'overview' },
-  text: null,
-  fade: 1,
-};
-
-export interface Insets {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-}
 
 interface Options {
   canvas: HTMLCanvasElement;
@@ -75,7 +30,6 @@ const NOISE_SHARE = 0.05;
 const DIMMED = 0.14;
 const HOVER_RADIUS = 18; // px
 const INTRO_FALLBACK_MS = 3000;
-const QUERY_WEIGHTS = [0.55, 0.28, 0.17];
 // Cloud points in css px: WebGL draws soft discs; the Canvas fallback draws small squares.
 const CLOUD_POINT = { gl: 3.2, canvas: { narrow: 1.7, wide: 1.9 } };
 // Particle text points are sized from the sampling spacing (a little under it) so dots stay
@@ -122,7 +76,7 @@ export class MapStage {
   private textTargets: Float32Array | null = null;
   private textPointSize: number = TEXT_POINT.max;
   private hovered: number | null = null;
-  private query = { active: false, x: 0, y: 0, vx: 0, vy: 0, targets: [] as number[], born: 0 };
+  private readonly query: QueryParticle;
   /** When the particles last started forming a new shape; see FORMATION. */
   private formStarted = performance.now();
   private revealed: boolean;
@@ -160,6 +114,7 @@ export class MapStage {
       },
       this.random,
     );
+    this.query = new QueryParticle(this.particles);
 
     this.revealed = !options.waitForIntro || this.media.reduce.matches;
     this.listen();
@@ -195,35 +150,13 @@ export class MapStage {
       ...passages.map((id) => this.options.passages[this.anchorOf.get(id) ?? -1]),
       ...this.options.labels.filter((l) => terms.includes(l.term)),
     ].filter(Boolean);
-    if (!points.length) return { ...OVERVIEW.camera, shift };
-    const xs = points.map((p) => p.x);
-    const ys = points.map((p) => p.y);
-    const span = Math.max(0.08, Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
-    return {
-      cx: (Math.max(...xs) + Math.min(...xs)) / 2,
-      cy: (Math.max(...ys) + Math.min(...ys)) / 2,
-      zoom: Math.min(2.6, 0.55 / span),
-      shift,
-    };
+    return frameCamera(points, shift);
   }
 
   /** Show a question as a particle that launches from `from` and settles among its matches. */
   ask(passageIds: number[] | null, from?: { x: number; y: number }): void {
     const targets = (passageIds ?? []).map((id) => this.anchorOf.get(id)).filter((a) => a !== undefined);
-    const q = this.query;
-    if (!targets.length) {
-      q.active = false;
-      return this.redrawIfIdle();
-    }
-    q.targets = targets;
-    q.born = performance.now();
-    const instant = this.media.reduce.matches || !from;
-    if (instant || !q.active) {
-      [q.x, q.y] = instant ? this.queryTarget() : [from.x, from.y];
-      q.vx = 0;
-      q.vy = instant ? 0 : -6; // a small upward kick off the bar
-    }
-    q.active = true;
+    this.query.show(targets, from, this.media.reduce.matches);
     this.redrawIfIdle();
   }
 
@@ -238,31 +171,22 @@ export class MapStage {
 
   // ------------------------------------------------------------------ geometry
 
-  private viewport() {
-    const i = this.options.insets();
+  private viewport(): Viewport {
+    const i: Insets = this.options.insets();
     return { left: i.left, top: i.top, width: this.width - i.left - i.right, height: this.height - i.top - i.bottom };
-  }
-
-  /** Map units -> screen pixels. UMAP normalises its axes separately, so each fits its own side. */
-  private project(u: number, v: number): [number, number] {
-    const vp = this.viewport();
-    const { cx, cy, zoom, shift } = this.scene.camera;
-    return [
-      vp.left + vp.width / 2 + shift * this.width + (u - cx) * vp.width * 0.92 * zoom,
-      vp.top + vp.height / 2 + (v - cy) * vp.height * 0.88 * zoom,
-    ];
   }
 
   private computeHomes(): void {
     const p = this.particles;
     const targets = this.textTargets;
+    const vp = this.viewport();
     for (let i = 0; i < p.count; i++) {
       if (targets && i >= p.anchorCount) {
         const t = ((i - p.anchorCount) % (targets.length / 2)) * 2;
         p.homeX[i] = targets[t];
         p.homeY[i] = targets[t + 1];
       } else {
-        [p.homeX[i], p.homeY[i]] = this.project(p.baseX[i], p.baseY[i]);
+        [p.homeX[i], p.homeY[i]] = project(p.baseX[i], p.baseY[i], this.scene.camera, vp, this.width);
       }
     }
   }
@@ -315,7 +239,7 @@ export class MapStage {
   private step(now: number): void {
     this.particles.step(this.stiffness(now), this.textTargets ? 0.04 : 0.12, this.pointer, this.media.narrow.matches);
     for (let s = 0; s < this.alpha.length; s++) this.alpha[s] += (this.targetAlpha(s) - this.alpha[s]) * 0.1;
-    this.stepQuery();
+    this.query.step();
   }
 
   /** Spring stiffness for this frame, following the FORMATION curve since the last new shape. */
@@ -323,31 +247,6 @@ export class MapStage {
     const t = Math.min(1, (now - this.formStarted) / FORMATION.ms);
     const eased = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2; // ease-in-out cubic
     return FORMATION.start + (FORMATION.end - FORMATION.start) * eased;
-  }
-
-  private stepQuery(): void {
-    const q = this.query;
-    if (!q.active) return;
-    const [tx, ty] = this.queryTarget();
-    q.vx = (q.vx + (tx - q.x) * 0.02) * 0.84;
-    q.vy = (q.vy + (ty - q.y) * 0.02) * 0.84;
-    q.x += q.vx;
-    q.y += q.vy;
-  }
-
-  /** Where the question settles: a weighted centre of its matches. */
-  private queryTarget(): [number, number] {
-    const { x, y } = this.particles;
-    let tx = 0;
-    let ty = 0;
-    let total = 0;
-    this.query.targets.forEach((a, rank) => {
-      const w = QUERY_WEIGHTS[rank] ?? 0.1;
-      tx += x[a] * w;
-      ty += y[a] * w;
-      total += w;
-    });
-    return [tx / total, ty / total - (this.query.targets.length === 1 ? 22 : 0)];
   }
 
   private renderStill(): void {
@@ -371,7 +270,7 @@ export class MapStage {
     this.drawCloud();
     if (this.textTargets) return; // particle text: nothing else on screen
     this.drawAnchors();
-    this.drawQuery();
+    this.query.draw(this.ctx, { colors: this.colors, ...this.theme }, this.media.reduce.matches);
     this.labelLayer.draw(
       this.labelItems(),
       { family: SANS, ink: this.theme.ink, halo: this.theme.ground },
@@ -433,40 +332,13 @@ export class MapStage {
     }
   }
 
-  private ring(x: number, y: number, radius: number, color: string, fill?: string): void {
+  private ring(x: number, y: number, radius: number, color: string): void {
     const { ctx } = this;
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, Math.PI * 2);
-    if (fill) {
-      ctx.fillStyle = fill;
-      ctx.fill();
-    }
     ctx.strokeStyle = color;
     ctx.lineWidth = 1.5;
     ctx.stroke();
-  }
-
-  private drawQuery(): void {
-    const q = this.query;
-    if (!q.active) return;
-    const { ctx, particles: p } = this;
-    const reveal = this.media.reduce.matches ? 1 : Math.min(1, (performance.now() - q.born) / 900);
-    q.targets.forEach((a, rank) => {
-      ctx.globalAlpha = reveal * (rank === 0 ? 0.9 : 0.55);
-      ctx.strokeStyle = this.colors[p.slot[a]];
-      ctx.lineWidth = rank === 0 ? 1.6 : 1;
-      ctx.beginPath();
-      ctx.moveTo(q.x, q.y);
-      ctx.lineTo(q.x + (p.x[a] - q.x) * reveal, q.y + (p.y[a] - q.y) * reveal);
-      ctx.stroke();
-    });
-    ctx.globalAlpha = 0.18;
-    ctx.fillStyle = this.theme.ink;
-    ctx.beginPath();
-    ctx.arc(q.x, q.y, 13, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-    this.ring(q.x, q.y, 5.5, this.theme.ground, this.theme.ink);
   }
 
   /** Which names to show, and how strongly, under the scene's label mode. */
@@ -583,29 +455,6 @@ export class MapStage {
     }
     if (this.scene.text) this.textTargets = this.sampleText(this.scene.text);
     this.computeHomes();
-    this.grid = this.drawGrid();
-  }
-
-  /** The faint backdrop grid, drawn once per resize. */
-  private drawGrid(): HTMLCanvasElement {
-    const grid = document.createElement('canvas');
-    grid.width = Math.round(this.width * this.dpr);
-    grid.height = Math.round(this.height * this.dpr);
-    const g = grid.getContext('2d')!;
-    g.scale(this.dpr, this.dpr);
-    g.strokeStyle = this.theme.grid;
-    g.lineWidth = 1;
-    const cell = this.media.narrow.matches ? 64 : 96;
-    g.beginPath();
-    for (let gx = (this.width % cell) / 2; gx <= this.width; gx += cell) {
-      g.moveTo(Math.round(gx) + 0.5, 0);
-      g.lineTo(Math.round(gx) + 0.5, this.height);
-    }
-    for (let gy = (this.height % cell) / 2; gy <= this.height; gy += cell) {
-      g.moveTo(0, Math.round(gy) + 0.5);
-      g.lineTo(this.width, Math.round(gy) + 0.5);
-    }
-    g.stroke();
-    return grid;
+    this.grid = drawGrid(this.width, this.height, this.dpr, this.theme.grid, this.media.narrow.matches ? 64 : 96);
   }
 }

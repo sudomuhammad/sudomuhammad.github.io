@@ -3,7 +3,8 @@
 import { person } from '../../data/cv';
 import { mappedPassages } from '../../data/map';
 import type { Step } from '../../data/story';
-import { OVERVIEW, type MapStage, type Scene } from '../map/stage';
+import { OVERVIEW, type Scene } from '../map/scene';
+import type { MapStage } from '../map/stage';
 
 export interface SceneContext {
   stage: MapStage;
