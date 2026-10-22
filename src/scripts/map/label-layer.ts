@@ -1,8 +1,9 @@
 // Collision-free placement of point labels on a 2D canvas, cartography style.
 // Each label first tries the four slots beside its point (right, left, above,
 // below). In dense spots it moves outward into stacked rows on either side and
-// is drawn with a thin leader line back to its point. Labels keep the slot they
-// had last frame while it stays free, so they don't flicker between positions.
+// is drawn with a thin leader line back to its point; only labels that must be drawn
+// go further than the first row, since a long leader reads as tangle. Labels keep the
+// slot they had last frame while it stays free, so they don't flicker between positions.
 
 export interface LabelItem {
   x: number;
@@ -24,9 +25,10 @@ export interface Box {
   b: number;
 }
 
-/** A candidate position; `leader` slots sit away from the point and get a line back to it. */
+/** A candidate position; `leader` slots sit `ring` rows away from the point and get a line back to it. */
 export interface Slot extends Box {
   leader: boolean;
+  ring: number;
 }
 
 export interface Bounds {
@@ -46,6 +48,7 @@ interface Style {
 const GAP = 9; // between a point and its label
 const PAD = 3; // clearance kept around each label
 const RINGS = 5; // how many stacked rows to try on each side before giving up
+const OPTIONAL_RINGS = 1; // how far out a label that needn't be drawn may go
 
 export const overlaps = (a: Box, b: Box) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
 const onScreen = (box: Box, { width, height, blocked = [] }: Bounds) =>
@@ -55,36 +58,37 @@ const onScreen = (box: Box, { width, height, blocked = [] }: Bounds) =>
 export function candidates(x: number, y: number, width: number, size: number): Slot[] {
   const half = size / 2 + PAD;
   const row = size + 2 * PAD + 2;
-  const slot = (left: number, centreY: number, leader: boolean): Slot => ({
+  const slot = (left: number, centreY: number, ring = 0): Slot => ({
     l: left - PAD,
     t: centreY - half,
     r: left + width + PAD,
     b: centreY + half,
-    leader,
+    leader: ring > 0,
+    ring,
   });
   const right = x + GAP;
   const left = x - GAP - width;
   const beside = [
-    slot(right, y, false),
-    slot(left, y, false),
-    slot(x - width / 2, y - row, false),
-    slot(x - width / 2, y + row, false),
+    slot(right, y),
+    slot(left, y),
+    slot(x - width / 2, y - row),
+    slot(x - width / 2, y + row),
   ];
-  const stacked = Array.from({ length: RINGS }, (_, i) => (i + 1) * row).flatMap((dy) => [
-    slot(right + GAP, y - dy, true),
-    slot(right + GAP, y + dy, true),
-    slot(left - GAP, y - dy, true),
-    slot(left - GAP, y + dy, true),
+  const stacked = Array.from({ length: RINGS }, (_, i) => i + 1).flatMap((ring) => [
+    slot(right + GAP, y - ring * row, ring),
+    slot(right + GAP, y + ring * row, ring),
+    slot(left - GAP, y - ring * row, ring),
+    slot(left - GAP, y + ring * row, ring),
   ]);
   return [...beside, ...stacked];
 }
 
 /**
  * The first candidate that's on screen and clear of `taken`, trying `preferred`
- * (last frame's slot) first. If none is clear, a forced label still gets its
- * first on-screen candidate; others get null.
+ * (last frame's slot) first. Unforced labels only look within OPTIONAL_RINGS rows.
+ * If none is clear, a forced label still gets its first on-screen candidate; others get null.
  */
-export function chooseSlot<T extends Box>(
+export function chooseSlot<T extends Slot>(
   options: T[],
   taken: Box[],
   bounds: Bounds,
@@ -93,7 +97,7 @@ export function chooseSlot<T extends Box>(
 ): { slot: T; index: number } | null {
   const order = options.map((_, i) => i);
   if (preferred >= 0 && preferred < options.length) order.unshift(...order.splice(preferred, 1));
-  const visible = order.filter((i) => onScreen(options[i], bounds));
+  const visible = order.filter((i) => onScreen(options[i], bounds) && (force || options[i].ring <= OPTIONAL_RINGS));
   const free = visible.find((i) => !taken.some((other) => overlaps(options[i], other)));
   const index = free ?? (force ? (visible[0] ?? 0) : -1);
   return index >= 0 ? { slot: options[index], index } : null;
