@@ -20,7 +20,7 @@ export const chapterCopy = {
   work: {
     nav: 'Work',
     title: 'What I work on',
-    lede: 'Five areas, each lit on the map in turn. Where a point sits comes from embedding my CV; its colour is the area I filed it under.',
+    lede: 'Five areas, each lit on the map in turn. Each point is a line of my CV, coloured by the area I filed it under and placed beside the work most like it.',
   },
   approach: { nav: approach.title, title: approach.title, lede: '' },
   experience: {
@@ -45,7 +45,7 @@ export const method = {
     },
     {
       title: 'Laid out',
-      text: 'UMAP places similar work close together. Where a point sits is computed; its colour is the section I filed it under, because clustering grouped short sentences by shared words rather than by the work.',
+      text: 'I filed each point under a section by hand, because clustering grouped short sentences by shared words rather than by the work. UMAP then lays the points out, nudged by those sections so each gathers in its own region; within a region, similar work sits close together.',
     },
     {
       title: 'Searched',

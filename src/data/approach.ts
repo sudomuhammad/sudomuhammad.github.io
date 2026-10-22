@@ -23,7 +23,7 @@ export const approach = {
     },
     {
       title: 'Proven, not assumed',
-      text: 'Regression tests replay fixed conversation sets on every prompt, tool or model change. Speed comes from design: one model call where there were several, caching what doesn’t change, and a small model wherever a big one isn’t needed.',
+      text: 'Regression tests replay fixed conversation sets on every prompt, tool or model change. Model output varies, so each case runs several times against a pass rate, and a model grades replies whose wording can differ. Speed comes from design: one model call where there were several, caching what doesn’t change, and a small model wherever a big one isn’t needed.',
       evidence: ['Agent regression tests', 'Single-call extraction', 'Prompt caching', 'Model routing and failover'],
     },
     {

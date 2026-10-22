@@ -134,7 +134,7 @@
         },
         {
           "title": "Agent regression tests",
-          "text": "Built automated regression testing for the agent: fixed conversation datasets with expected tool calls and outputs, run on every prompt, tool and model change."
+          "text": "Built automated regression testing for the agent: fixed conversation datasets with expected tool calls and outputs, run on every prompt, tool and model change. Each case ran several times against a pass rate, with temperature pinned and a model grading replies whose wording could vary."
         },
         {
           "theme": "context",

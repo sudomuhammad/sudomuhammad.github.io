@@ -6,9 +6,6 @@ The page is a map of my CV. Every bullet point is a sentence embedding, laid out
 sits together, and the story scrolls through it section by section. You can also ask it questions:
 answers are quoted from the CV and searched entirely in your browser.
 
-It's a small site, but it's built the way I build AI features: the model does the fuzzy part, code
-does the parts that have to be right, and decisions are measured rather than assumed.
-
 ## How it works
 
 ```mermaid
@@ -16,7 +13,8 @@ flowchart LR
   cv[cv.json<br/>roles, bullets, skills] --> passages[40 passages]
   passages --> embed[MiniLM embeddings<br/>quantised ONNX, 384-d]
   embed --> umap[UMAP to 2D<br/>positions]
-  cv --> tags[hand-tagged sections<br/>colours]
+  cv --> tags[hand-tagged sections<br/>colours, regions]
+  tags --> umap
   umap --> map[map.json]
   tags --> map
   embed --> map
@@ -25,7 +23,8 @@ flowchart LR
 ```
 
 - **Build time (Python, `ml/build_map.py`).** The CV is flattened into short passages, embedded with
-  `all-MiniLM-L6-v2`, and placed with UMAP. The output, `src/data/map.json`, is committed; CI fails if it's
+  `all-MiniLM-L6-v2`, and placed with UMAP, lightly supervised by the hand-tagged sections so each gets its own
+  region. The output, `src/data/map.json`, is committed; CI fails if it's
   stale.
 - **One model, two places.** The browser loads the *same* quantised ONNX file at the same pinned commit
   through Transformers.js, so a visitor's question lands in the same vector space as the passages. It's
@@ -45,7 +44,10 @@ clusters named from their top terms. With about 40 one-sentence passages it grou
 wording rather than by the work: a fleet-reporting system ended up under prompt engineering, and my
 electrical engineering degree under data science. A quick check with larger embedding models didn't
 recover sensible sections either. How the work should be filed is a judgement, so I make it in
-`cv.json` and let the embeddings decide only where each point sits. A zero-shot check (each passage
+`cv.json`. The tags also steer the layout: UMAP gets them as a weak target, so each section gathers in
+its own region. Which region a point is in is my call; where it sits within that region, and which
+points sit side by side, comes from the embeddings. Left unsupervised, half the points' nearest
+neighbours belonged to another section. A zero-shot check (each passage
 against each section's description) agrees with my tags about 80% of the time with MiniLM, and its
 disagreements were worth a second look.
 

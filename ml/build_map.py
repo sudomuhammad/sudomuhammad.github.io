@@ -9,11 +9,12 @@ Pipeline:
     CV passages
       -> MiniLM sentence embeddings (the same quantised ONNX file the browser
          loads, so visitors' query vectors line up with these)
-      -> UMAP to 2D for the drawn layout
+      -> UMAP to 2D for the drawn layout, lightly supervised by theme
 
-Positions come from the embeddings; colours don't. Each CV item is tagged by hand
-with a theme from src/data/themes.json, because clustering ~40 short passages
-grouped them by shared words rather than by the work. Tagged prose is drawn; lists
+Each CV item is tagged by hand with a theme from src/data/themes.json, because
+clustering ~40 short passages grouped them by shared words rather than by the work.
+UMAP sees the tags as a weak target, so each theme gathers into its own region while
+the embeddings still arrange the passages within it. Tagged prose is drawn; lists
 (tools, skills) and facts are searchable only. The output is committed; CI only
 runs --check.
 """
@@ -73,6 +74,10 @@ class Tuning:
     n_neighbors: int = 10
     layout_min_dist: float = 0.4
     layout_spread: float = 1.2
+    # How much the theme tags shape the layout (0 = ignore them, 1 = only them). Unsupervised,
+    # half of passages' nearest neighbours were other themes'. Even 0.01 separates the themes;
+    # higher values add nothing but squeeze each theme into a knot.
+    theme_weight: float = 0.01
     # Radius step (map units) for fanning out skills that land on the same point.
     coincident_spread: float = 0.018
 
@@ -259,7 +264,14 @@ def normalise_rows(matrix: NDArray[np.floating]) -> NDArray[np.float32]:
     return (matrix / np.clip(norms, 1e-12, None)).astype(np.float32)
 
 
-def reduce(vectors: NDArray[np.float32], dims: int, min_dist: float, spread: float = 1.0) -> NDArray[np.float32]:
+def reduce(
+    vectors: NDArray[np.float32],
+    dims: int,
+    min_dist: float,
+    spread: float = 1.0,
+    labels: NDArray[np.int_] | None = None,
+) -> NDArray[np.float32]:
+    """UMAP projection; with `labels`, supervised so that items sharing a label sit together."""
     import umap
 
     # n_jobs=1 with a fixed seed is what makes UMAP deterministic between runs.
@@ -271,14 +283,15 @@ def reduce(vectors: NDArray[np.float32], dims: int, min_dist: float, spread: flo
         metric="cosine",
         random_state=TUNING.seed,
         n_jobs=1,
-    ).fit_transform(vectors)
+        target_weight=TUNING.theme_weight,
+    ).fit_transform(vectors, y=labels)
 
 
-def layout(vectors: NDArray[np.float32]) -> NDArray[np.float32]:
-    """2D positions scaled to the unit square."""
+def layout(vectors: NDArray[np.float32], themes: NDArray[np.int_]) -> NDArray[np.float32]:
+    """2D positions scaled to the unit square, each theme gathered into its own region."""
     import numpy as np
 
-    xy = reduce(vectors, dims=2, min_dist=TUNING.layout_min_dist, spread=TUNING.layout_spread)
+    xy = reduce(vectors, dims=2, min_dist=TUNING.layout_min_dist, spread=TUNING.layout_spread, labels=themes)
     span = np.ptp(xy, axis=0)
     return (xy - xy.min(axis=0)) / np.where(span > 0, span, 1)
 
@@ -378,9 +391,9 @@ def build(cv: dict[str, Any], themes: list[Theme]) -> dict[str, Any]:
     tokenizer = load_tokenizer()
 
     on_map = np.array([is_drawn(p) for p in passages])
-    xy = layout(vectors[on_map])
-
     map_passages = [p for p, shown in zip(passages, on_map, strict=True) if shown]
+    xy = layout(vectors[on_map], np.array([p["theme"] for p in map_passages]))
+
     for p, (x, y) in zip(map_passages, xy, strict=True):
         p.update(x=round(float(x), 4), y=round(float(y), 4))
     for p in passages:
