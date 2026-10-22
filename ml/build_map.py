@@ -14,7 +14,9 @@ Pipeline:
 Each CV item is tagged by hand with a theme from src/data/themes.json, because
 clustering ~40 short passages grouped them by shared words rather than by the work.
 UMAP sees the tags as a weak target, so each theme gathers into its own region while
-the embeddings still arrange the passages within it. Tagged prose is drawn; lists
+the embeddings still arrange the passages within it. That cuts most links between regions,
+which would leave their placement to chance, so each region starts where its theme sits on
+a small map of how alike the themes are. Tagged prose is drawn; lists
 (tools, skills) and facts are searchable only. The output is committed; CI only
 runs --check.
 """
@@ -78,6 +80,10 @@ class Tuning:
     # half of passages' nearest neighbours were other themes'. Even 0.01 separates the themes;
     # higher values add nothing but squeeze each theme into a knot.
     theme_weight: float = 0.01
+    # Where each theme's region starts: theme-to-theme distances scaled to this size, in UMAP's
+    # units, with this much jitter so a region's passages don't start on one point.
+    region_scale: float = 10.0
+    region_jitter: float = 0.5
     # Radius step (map units) for fanning out skills that land on the same point.
     coincident_spread: float = 0.018
 
@@ -270,6 +276,7 @@ def reduce(
     min_dist: float,
     spread: float = 1.0,
     labels: NDArray[np.int_] | None = None,
+    init: NDArray[np.float32] | str = "spectral",
 ) -> NDArray[np.float32]:
     """UMAP projection; with `labels`, supervised so that items sharing a label sit together."""
     import umap
@@ -284,6 +291,7 @@ def reduce(
         random_state=TUNING.seed,
         n_jobs=1,
         target_weight=TUNING.theme_weight,
+        init=init,
     ).fit_transform(vectors, y=labels)
 
 
@@ -291,9 +299,36 @@ def layout(vectors: NDArray[np.float32], themes: NDArray[np.int_]) -> NDArray[np
     """2D positions scaled to the unit square, each theme gathered into its own region."""
     import numpy as np
 
-    xy = reduce(vectors, dims=2, min_dist=TUNING.layout_min_dist, spread=TUNING.layout_spread, labels=themes)
+    xy = reduce(
+        vectors,
+        dims=2,
+        min_dist=TUNING.layout_min_dist,
+        spread=TUNING.layout_spread,
+        labels=themes,
+        init=region_starts(vectors, themes),
+    )
     span = np.ptp(xy, axis=0)
     return (xy - xy.min(axis=0)) / np.where(span > 0, span, 1)
+
+
+def region_starts(vectors: NDArray[np.float32], themes: NDArray[np.int_]) -> NDArray[np.float32]:
+    """A starting point for each passage: its theme's place on a 2D map of theme similarity.
+
+    Each theme is the mean of its passages' vectors; classical MDS lays the themes out so
+    the distances between them follow cosine distance as closely as two dimensions allow.
+    """
+    import numpy as np
+
+    keys, index = np.unique(themes, return_inverse=True)
+    centres = normalise_rows(np.stack([vectors[themes == k].mean(axis=0) for k in keys]))
+    squared = (1 - centres @ centres.T) ** 2
+    centring = np.eye(len(keys)) - 1 / len(keys)
+    values, axes = np.linalg.eigh(-0.5 * centring @ squared @ centring)
+    top = np.argsort(values)[::-1][:2]
+    places = axes[:, top] * np.sqrt(np.clip(values[top], 0, None))
+    places *= TUNING.region_scale / max(np.abs(places).max(), 1e-9)
+    jitter = np.random.default_rng(TUNING.seed).normal(scale=TUNING.region_jitter, size=(len(themes), 2))
+    return (places[index] + jitter).astype(np.float32)
 
 
 # ---------------------------------------------------------------- labels

@@ -45,7 +45,7 @@ export const method = {
     },
     {
       title: 'Laid out',
-      text: 'I filed each point under a section by hand, because clustering grouped short sentences by shared words rather than by the work. UMAP then lays the points out, nudged by those sections so each gathers in its own region; within a region, similar work sits close together.',
+      text: 'I filed each point under a section by hand, because clustering grouped short sentences by shared words rather than by the work. UMAP then lays the points out, nudged by those sections so each gathers in its own region. Regions that read alike sit nearer each other, and within a region, similar work sits close together.',
     },
     {
       title: 'Searched',

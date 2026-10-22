@@ -46,7 +46,10 @@ electrical engineering degree under data science. A quick check with larger embe
 recover sensible sections either. How the work should be filed is a judgement, so I make it in
 `cv.json`. The tags also steer the layout: UMAP gets them as a weak target, so each section gathers in
 its own region. Which region a point is in is my call; where it sits within that region, and which
-points sit side by side, comes from the embeddings. Left unsupervised, half the points' nearest
+points sit side by side, comes from the embeddings. Gathering the sections cuts most links between
+them, which left the regions' placement to chance (prompt engineering ended up across the map from
+agents, its closest section), so each region starts where its section sits on a small MDS map of how
+alike the sections' mean embeddings are. Left unsupervised, half the points' nearest
 neighbours belonged to another section. A zero-shot check (each passage
 against each section's description) agrees with my tags about 80% of the time with MiniLM, and its
 disagreements were worth a second look.
