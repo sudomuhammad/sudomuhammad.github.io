@@ -28,12 +28,12 @@ const stage = new MapStage({
   themes,
   passages: mappedPassages,
   labels,
-  // Keep the map clear of the top bar and the ask bar. When stacked, the active card sits
-  // under the map, so the map stops above it, however tall the card is.
+  // Keep the map clear of the top bar and the ask bar. When stacked, the map keeps the band
+  // each step reserves above its card, so it doesn't jump with where the card is mid-scroll.
   insets: () => ({
     top: topbar.offsetHeight + GAP / 2,
     right: GAP,
-    bottom: stacked.matches ? innerHeight - activeCardTop() + GAP : askRoot.offsetHeight + GAP,
+    bottom: stacked.matches ? innerHeight - mapBandBottom() + GAP : askRoot.offsetHeight + GAP,
     left: GAP,
   }),
   covered: () => [topbar, askRoot, document.querySelector('.step[data-active] .card')].flatMap(boxOf),
@@ -47,10 +47,10 @@ function boxOf(el: Element | null): Box[] {
   return r && r.width && r.height ? [{ l: r.left, t: r.top, r: r.right, b: r.bottom }] : [];
 }
 
-/** Top edge of the active story card on screen, so the stacked map can stop above it. */
-function activeCardTop(): number {
-  const top = document.querySelector('.step[data-active] .card')?.getBoundingClientRect().top;
-  return top !== undefined && top > 0 && top < innerHeight ? top : innerHeight * NO_CARD_TOP;
+/** Stacked: the bottom of the screen band the active step keeps for the map (its top padding; see Step.astro). */
+function mapBandBottom(): number {
+  const step = document.querySelector('.step[data-active]');
+  return step?.querySelector('.card') ? parseFloat(getComputedStyle(step).paddingTop) : innerHeight * NO_CARD_TOP;
 }
 
 const story = new StoryController(
