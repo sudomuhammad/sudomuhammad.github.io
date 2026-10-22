@@ -63,9 +63,11 @@ export class AskBar {
     if (ready && this.latest && !this.latestWasSemantic) await this.answer(this.latest);
   }
 
+  /** Collapse back to the pill, handing keyboard focus to it so it isn't lost with the panel. */
   close(): void {
     this.root.dataset.open = 'false';
     this.clear();
+    this.root.querySelector<HTMLButtonElement>('[data-open]')?.focus();
   }
 
   private bind(): void {
@@ -82,6 +84,12 @@ export class AskBar {
     });
     this.root.querySelector('[data-open]')?.addEventListener('click', () => this.open());
     this.root.querySelector('[data-close]')?.addEventListener('click', () => this.close());
+    this.root.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.root.dataset.open === 'true') {
+        e.preventDefault();
+        this.close();
+      }
+    });
     this.root.querySelectorAll<HTMLButtonElement>('[data-question]').forEach((button) =>
       button.addEventListener('click', () => {
         this.input.value = button.dataset.question!;
@@ -100,6 +108,8 @@ export class AskBar {
     this.render(question, result);
     const ids = result.hits.map((h) => h.id);
     const { stage } = this.options;
+    // No matches: nothing to show on the map, so the story's own scene comes back.
+    if (!ids.length) return this.options.onDismiss();
     // Only the matches are named, so the answer reads clearly over whatever was on screen.
     stage.apply({ ...OVERVIEW, lit: ids, labels: { kind: 'none' } });
     const bar = this.input.getBoundingClientRect();
