@@ -2,6 +2,7 @@
 // connects them.
 import { labels, mappedPassages, themes } from '../data/map';
 import { stackedLayout } from './layout';
+import type { Box } from './map/label-layer';
 import { MapStage } from './map/stage';
 import { SearchService } from './search/search-service';
 import { StoryController } from './story/controller';
@@ -35,9 +36,16 @@ const stage = new MapStage({
     bottom: stacked.matches ? innerHeight - activeCardTop() + GAP : askRoot.offsetHeight + GAP,
     left: GAP,
   }),
+  covered: () => [topbar, askRoot, document.querySelector('.step[data-active] .card')].flatMap(boxOf),
   onHover: (anchor, x, y) => tooltip.show(anchor, x, y),
   waitForIntro: introWanted(),
 });
+
+/** An element's box on screen, or nothing if it isn't laid out. */
+function boxOf(el: Element | null): Box[] {
+  const r = el?.getBoundingClientRect();
+  return r && r.width && r.height ? [{ l: r.left, t: r.top, r: r.right, b: r.bottom }] : [];
+}
 
 /** Top edge of the active story card on screen, so the stacked map can stop above it. */
 function activeCardTop(): number {

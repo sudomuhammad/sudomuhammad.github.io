@@ -65,6 +65,14 @@ describe('chooseSlot', () => {
     expect(chooseSlot(options, options, bounds, true)?.slot).toBe(options[0]);
   });
 
+  it('keeps labels out of areas the page covers, even forced ones', () => {
+    const options = candidates(500, 400, 100, 12);
+    const card = { l: 0, t: 0, r: 495, b: 800 }; // a card just left of the point
+    expect(chooseSlot(options, [], { ...bounds, blocked: [card] }, false)?.slot).toBe(options[0]);
+    const placed = chooseSlot(options, [options[0]], { ...bounds, blocked: [card] }, true)!.slot;
+    expect(overlaps(placed, card)).toBe(false);
+  });
+
   it('never chooses an off-screen slot when an on-screen one exists', () => {
     const options = candidates(990, 400, 100, 12); // right edge: the right slot is off screen
     expect(chooseSlot(options, [], bounds, false)?.slot).toBe(options[1]);

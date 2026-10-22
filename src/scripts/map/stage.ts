@@ -5,7 +5,7 @@
 import type { Label, MappedPassage, Theme } from '../../data/map';
 import { createGlCloud, type GlCloud } from './gl-cloud';
 import { drawGrid } from './grid';
-import { LabelLayer, type LabelItem } from './label-layer';
+import { LabelLayer, type Box, type LabelItem } from './label-layer';
 import { ParticleSystem, type Pointer } from './particles';
 import { QueryParticle } from './query';
 import { seededRandom, shufflePairs } from './random';
@@ -19,6 +19,8 @@ interface Options {
   labels: Label[];
   /** Screen space kept clear of the map (top bar, ask bar). */
   insets: () => Insets;
+  /** Screen areas the page covers, in css pixels, which labels must stay out of (e.g. the active card). */
+  covered?: () => Box[];
   onHover?: (anchor: Anchor | null, x: number, y: number) => void;
   /** Stay empty until burstFrom() (the token intro), with a timeout fallback. */
   waitForIntro?: boolean;
@@ -274,7 +276,7 @@ export class MapStage {
     this.labelLayer.draw(
       this.labelItems(),
       { family: SANS, ink: this.theme.ink, halo: this.theme.ground },
-      { width: this.width, height: this.height },
+      { width: this.width, height: this.height, blocked: this.options.covered?.() },
     );
   }
 

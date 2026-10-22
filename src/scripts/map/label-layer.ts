@@ -32,6 +32,8 @@ export interface Slot extends Box {
 export interface Bounds {
   width: number;
   height: number;
+  /** Screen areas covered by the page (cards, bars): labels treat them as off screen. */
+  blocked?: Box[];
 }
 
 interface Style {
@@ -46,7 +48,8 @@ const PAD = 3; // clearance kept around each label
 const RINGS = 5; // how many stacked rows to try on each side before giving up
 
 export const overlaps = (a: Box, b: Box) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
-const onScreen = (box: Box, { width, height }: Bounds) => box.l >= 0 && box.t >= 0 && box.r <= width && box.b <= height;
+const onScreen = (box: Box, { width, height, blocked = [] }: Bounds) =>
+  box.l >= 0 && box.t >= 0 && box.r <= width && box.b <= height && !blocked.some((area) => overlaps(box, area));
 
 /** Candidate slots in order of preference: the four beside the point, then stacked rows moving outward. */
 export function candidates(x: number, y: number, width: number, size: number): Slot[] {
