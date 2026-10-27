@@ -3,7 +3,7 @@
     "name": "Muhammad Uzair",
     "role": "AI Engineer",
     "line": "I build AI that people talk to.",
-    "summary": "Five years in data science and machine learning, the last three putting language models into products. Most recently Aida, an AI financial adviser, where the answers had to be right as well as fast. I like problems where the model is only half the job; the rest is making it quick, keeping the data honest, and getting it into people’s hands.",
+    "summary": "Five years in AI and machine learning, most recently building Aida, an AI financial adviser, where the answers had to be right as well as fast. I like problems where the model is only half the job; the rest is making it quick, keeping the data honest, and getting it into people’s hands.",
     "availability": "Available now",
     "location": "UK, open to relocation",
     "email": "uzaiirr@outlook.com",
@@ -14,6 +14,8 @@
     {
       "theme": "agents",
       "items": [
+        "agent architecture",
+        "LangGraph",
         "Microsoft Agent Framework",
         "CrewAI",
         "LangChain",
@@ -23,13 +25,17 @@
         "tool calling",
         "model routing",
         "LLM evaluation",
-        "fine-tuning (LoRA/PEFT)"
+        "fine-tuning (LoRA/PEFT)",
+        "LLM-as-judge",
+        "OpenAI models",
+        "Claude Code"
       ]
     },
     {
       "theme": "context",
       "items": [
         "context engineering",
+        "memory management",
         "prompt caching",
         "structured outputs"
       ]
@@ -38,7 +44,7 @@
       "theme": "nlp",
       "items": [
         "RAG",
-        "embeddings and semantic search",
+        "embeddings and hybrid search",
         "Azure AI Search",
         "Qdrant",
         "Pinecone",
@@ -84,7 +90,7 @@
     "Based in the UK and open to relocation.",
     "Available to start now.",
     "Speaks English fluently; Urdu and Pashto are native languages.",
-    "Five years in data science and machine learning, the last three putting language models into products."
+    "Five years in AI and machine learning, the last three putting language models into products."
   ],
   "roles": [
     {
@@ -160,7 +166,7 @@
       "start": "11/2023",
       "end": "07/2025",
       "theme": "data",
-      "context": "Data science and backend work for a vehicle fleet business: research, proof-of-concept builds, statistical analysis and deployment pipelines for internal teams.",
+      "context": "Data science and backend work for a vehicle fleet business: research, proof-of-concept builds and analytics for internal teams.",
       "points": [
         {
           "theme": "agents",
@@ -177,9 +183,18 @@
           "text": "Built a vehicle utilisation and monitoring system that cut manual reporting by 70%."
         },
         {
+          "title": "Statistical modelling",
+          "text": "Ran statistical modelling and exploratory analysis across MSSQL, PostgreSQL and MongoDB."
+        },
+        {
           "theme": "eng",
           "title": "MSSQL to PostgreSQL migration",
           "text": "Migrated databases from MSSQL to PostgreSQL with no data loss, improving query performance."
+        },
+        {
+          "title": "Deployment pipelines",
+          "text": "Managed deployment pipelines with CircleCI and Docker, reducing release times.",
+          "theme": "eng"
         }
       ],
       "tech": [
@@ -194,7 +209,10 @@
         "LangChain",
         "CircleCI",
         "PostgreSQL",
-        "MongoDB"
+        "MongoDB",
+        "Bitbucket",
+        "Postman",
+        "MSSQL"
       ]
     },
     {
@@ -231,7 +249,13 @@
         "Docker",
         "LangChain",
         "pytest",
-        "SageMaker"
+        "SageMaker",
+        "Hugging Face",
+        "TensorFlow",
+        "scikit-learn",
+        "GitLab",
+        "Postman",
+        "Google Analytics"
       ]
     },
     {
@@ -257,7 +281,8 @@
         "SageMaker",
         "Google Colab",
         "TensorFlow",
-        "Hugging Face"
+        "Hugging Face",
+        "GitHub"
       ]
     },
     {
@@ -273,7 +298,8 @@
         "Oracle RDBMS",
         "Red Hat Linux",
         "SQL",
-        "VMware"
+        "VMware",
+        "Fusion Middleware"
       ]
     }
   ],

@@ -6,7 +6,7 @@ import { approach } from './approach';
 export const meta = {
   title: 'Muhammad Uzair, AI Engineer',
   description:
-    'Muhammad Uzair builds language-model agents for real products. Five years in data science and machine learning, most recently AI Engineer on Aida at Money Means. Available now.',
+    'Muhammad Uzair builds language-model agents for real products. Five years in AI and machine learning, most recently AI Engineer on Aida at Money Means. Available now.',
 };
 
 export const intro = {
